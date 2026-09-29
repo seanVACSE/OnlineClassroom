@@ -1,0 +1,146 @@
+.dashboard {
+  width: min(960px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 72px 0;
+}
+
+.page-heading {
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.page-heading h1,
+.tool-placeholder h1 {
+  margin: 0;
+  color: #28362d;
+  font-family: var(--display);
+  font-size: 42px;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.page-heading p,
+.tool-placeholder p {
+  margin: 12px 0 0;
+  color: #68736b;
+  font-size: 15px;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 112px;
+  padding: 18px;
+  border: 1px solid #e1e6df;
+  border-radius: 8px;
+  color: inherit;
+  background: #fff;
+  text-decoration: none;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.tool-card:hover {
+  border-color: #9caf9b;
+  transform: translateY(-2px);
+}
+
+.tool-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  color: #3f5344;
+}
+
+.tool-icon--coral {
+  background: #f8e3d8;
+}
+
+.tool-icon--blue {
+  background: #deedf2;
+}
+
+.tool-icon--green {
+  background: #e2eddc;
+}
+
+.tool-card-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.tool-card-copy strong {
+  color: #2d392f;
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.tool-card-copy > span {
+  color: #68736b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tool-arrow {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #7c887e;
+}
+
+.tool-placeholder {
+  width: min(700px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #45624c;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.tool-placeholder h1 {
+  margin-top: 36px;
+}
+
+.tool-card:focus-visible,
+.back-link:focus-visible {
+  outline: 3px solid #34784d;
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .dashboard {
+    padding-top: 52px;
+  }
+
+  .tool-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 500px) {
+  .page-heading h1,
+  .tool-placeholder h1 {
+    font-size: 34px;
+  }
+
+  .tool-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

@@ -1,0 +1,30 @@
+:root {
+  font-family: 'DM Sans', sans-serif;
+  color: #29342c;
+  background: #fffefa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --display: 'Fredoka', 'DM Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+::selection {
+  color: #203626;
+  background: #d9edcc;
+}
