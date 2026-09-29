@@ -1,11 +1,14 @@
-import { ArrowLeft, ArrowUpRight, CodeXml, Keyboard, Paintbrush } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, CodeXml, Keyboard, Paintbrush, PenLine } from 'lucide-react'
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { TracingAssignmentList } from './tools/tracing/TracingAssignmentList'
+import { TracingWorkspace } from './tools/tracing/TracingWorkspace'
 import './App.css'
 
 const tools = [
   { id: 'pixel-art', name: 'Pixel Art', description: 'Make a picture one pixel at a time.', icon: Paintbrush, color: 'coral' },
   { id: 'typing-practice', name: 'Typing Practice', description: 'Practice your keyboard skills.', icon: Keyboard, color: 'blue' },
   { id: 'code-playground', name: 'Code Playground', description: 'Try out a small coding project.', icon: CodeXml, color: 'green' },
+  { id: 'tracing', name: 'Tracing', description: 'Trace over assigned images.', icon: PenLine, color: 'coral' },
 ]
 
 function HomePage() {
@@ -50,6 +53,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/tools/tracing" element={<TracingAssignmentList />} />
+      <Route path="/tools/tracing/:assignmentId" element={<TracingWorkspace />} />
       <Route path="/tools/:toolId" element={<ToolPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

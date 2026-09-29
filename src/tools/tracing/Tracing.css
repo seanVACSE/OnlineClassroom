@@ -1,0 +1,109 @@
+.tracing-empty {
+  text-align: center;
+  color: #68736b;
+}
+
+.tracing-workspace {
+  width: min(900px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.tracing-workspace h1 {
+  margin: 24px 0 20px;
+  color: #28362d;
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 500;
+}
+
+.tracing-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tracing-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #e1e6df;
+  border-radius: 8px;
+  background: #fff;
+  color: #2d392f;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tracing-toolbar button.active {
+  border-color: #34784d;
+  background: #e2eddc;
+}
+
+.tracing-toolbar button.tracing-export {
+  margin-left: auto;
+  border-color: #34784d;
+  background: #34784d;
+  color: #fff;
+}
+
+.tracing-toolbar button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tracing-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  border: 1px solid #e1e6df;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f4f6f2;
+  touch-action: none;
+}
+
+.tracing-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tracing-canvas--base {
+  position: relative;
+}
+
+.tracing-canvas--draw {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.tracing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  color: #68736b;
+  font-size: 13px;
+}
+
+.tracing-nav button {
+  padding: 8px 16px;
+  border: 1px solid #e1e6df;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tracing-nav button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
