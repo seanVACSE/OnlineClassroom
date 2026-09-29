@@ -142,7 +142,6 @@ export function TracingWorkspace() {
 
   const handleClear = useCallback(() => {
     if (!assignment || !currentImage) return
-    if (!window.confirm('Clear all drawing on this image?')) return
 
     clearStrokes(assignment.id, currentImage.fileName)
     setStrokesByFile((prev) => ({ ...prev, [currentImage.fileName]: [] }))
