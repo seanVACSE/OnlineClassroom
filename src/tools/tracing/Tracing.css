@@ -55,9 +55,17 @@
   cursor: not-allowed;
 }
 
+.tracing-canvas-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
 .tracing-canvas-wrapper {
   position: relative;
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
   border: 1px solid #e1e6df;
   border-radius: 8px;
   overflow: hidden;
@@ -68,7 +76,7 @@
 .tracing-canvas {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 
 .tracing-canvas--base {
@@ -88,6 +96,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
   gap: 16px;
   margin-top: 16px;
   color: #68736b;
@@ -106,4 +115,30 @@
 .tracing-nav button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Fullscreen mode: fill the entire screen, no page scroll, image fits like a slide. */
+.tracing-workspace.is-fullscreen {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 16px;
+  background: #1b1f1c;
+  overflow: hidden;
+}
+
+.tracing-workspace.is-fullscreen .back-link,
+.tracing-workspace.is-fullscreen h1 {
+  display: none;
+}
+
+.tracing-workspace.is-fullscreen .tracing-toolbar {
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+}
+
+.tracing-workspace.is-fullscreen .tracing-canvas-area {
+  flex: 1 1 auto;
 }

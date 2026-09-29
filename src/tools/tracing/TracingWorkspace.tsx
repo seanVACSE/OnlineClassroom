@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Download, Eraser, PenLine, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, Eraser, Maximize, Minimize, PenLine, Trash2 } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { getTracingAssignment } from '../../data/tracingAssets'
 import { getTracingColor } from '../../data/tracingColors'
@@ -18,7 +18,10 @@ export function TracingWorkspace() {
   const [tool, setTool] = useState<TraceTool>('pen')
   const [strokesByFile, setStrokesByFile] = useState<Record<string, Stroke[]>>({})
   const [isExporting, setIsExporting] = useState(false)
+  const [imageAspect, setImageAspect] = useState<number | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
+  const containerRef = useRef<HTMLDivElement>(null)
   const baseCanvasRef = useRef<HTMLCanvasElement>(null)
   const drawCanvasRef = useRef<HTMLCanvasElement>(null)
   const currentStrokeRef = useRef<Stroke | null>(null)
@@ -62,12 +65,29 @@ export function TracingWorkspace() {
       if (drawCtx) {
         replayStrokes(drawCtx, strokesByFile[currentImage.fileName] ?? [], width, height)
       }
+
+      setImageAspect(width / height)
     }
     img.src = currentImage.url
     // strokesByFile intentionally omitted: this effect should only re-run on image change,
     // strokes are replayed fresh from state at that moment via the closure above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignment, currentImage])
+
+  // Keep isFullscreen in sync when the browser exits fullscreen (e.g. via Esc).
+  useEffect(() => {
+    const handleChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current)
+    document.addEventListener('fullscreenchange', handleChange)
+    return () => document.removeEventListener('fullscreenchange', handleChange)
+  }, [])
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen()
+    } else {
+      void containerRef.current?.requestFullscreen()
+    }
+  }, [])
 
   const getNormalizedPoint = useCallback((event: React.PointerEvent<HTMLCanvasElement>): TracePoint => {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -144,7 +164,7 @@ export function TracingWorkspace() {
   if (!assignmentId || !assignment) return <Navigate to="/tools/tracing" replace />
 
   return (
-    <main className="tracing-workspace">
+    <main ref={containerRef} className={`tracing-workspace${isFullscreen ? ' is-fullscreen' : ''}`}>
       <Link className="back-link" to="/tools/tracing"><ArrowLeft size={17} /> Back to assignments</Link>
       <h1>{assignment.name}</h1>
 
@@ -158,21 +178,26 @@ export function TracingWorkspace() {
         <button type="button" onClick={handleClear}>
           <Trash2 size={16} /> Clear
         </button>
+        <button type="button" onClick={toggleFullscreen}>
+          {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />} {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        </button>
         <button type="button" className="tracing-export" onClick={handleExport} disabled={isExporting}>
           <Download size={16} /> {isExporting ? 'Exporting…' : 'Export PDF'}
         </button>
       </div>
 
-      <div className="tracing-canvas-wrapper">
-        <canvas ref={baseCanvasRef} className="tracing-canvas tracing-canvas--base" />
-        <canvas
-          ref={drawCanvasRef}
-          className="tracing-canvas tracing-canvas--draw"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-        />
+      <div className="tracing-canvas-area">
+        <div className="tracing-canvas-wrapper" style={imageAspect ? { aspectRatio: `${imageAspect}` } : undefined}>
+          <canvas ref={baseCanvasRef} className="tracing-canvas tracing-canvas--base" />
+          <canvas
+            ref={drawCanvasRef}
+            className="tracing-canvas tracing-canvas--draw"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          />
+        </div>
       </div>
 
       <div className="tracing-nav">
