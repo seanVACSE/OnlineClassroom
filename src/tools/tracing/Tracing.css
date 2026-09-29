@@ -55,6 +55,27 @@
   cursor: not-allowed;
 }
 
+.tracing-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tracing-color-swatch {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.tracing-color-swatch.selected {
+  border-color: #28362d;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #34784d;
+}
+
 .tracing-canvas-area {
   display: flex;
   align-items: center;
@@ -139,6 +160,28 @@
   margin-bottom: 12px;
 }
 
+.tracing-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.tracing-workspace.is-fullscreen .tracing-main {
+  flex: 1 1 auto;
+  flex-direction: row;
+  gap: 16px;
+  min-height: 0;
+}
+
+.tracing-workspace.is-fullscreen .tracing-colors {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 36px);
+  align-content: center;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
 .tracing-workspace.is-fullscreen .tracing-canvas-area {
   flex: 1 1 auto;
+  min-width: 0;
 }

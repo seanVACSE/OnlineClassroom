@@ -3,6 +3,7 @@ import { ArrowLeft, Download, Eraser, Maximize, Minimize, PenLine, Trash2 } from
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { getTracingAssignment } from '../../data/tracingAssets'
 import { getTracingColor } from '../../data/tracingColors'
+import { TRACE_COLORS } from './palette'
 import { clearStrokes, loadStrokes, saveStrokes } from './tracingStorage'
 import { drawStroke, replayStrokes, widthForTool, type Stroke, type TraceTool, type TracePoint } from './tracingStrokes'
 import { exportAssignmentAsPdf } from './exportPdf'
@@ -16,6 +17,7 @@ export function TracingWorkspace() {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [tool, setTool] = useState<TraceTool>('pen')
+  const [color, setColor] = useState(() => (assignment ? getTracingColor(assignment.id) : TRACE_COLORS[0].value))
   const [strokesByFile, setStrokesByFile] = useState<Record<string, Stroke[]>>({})
   const [isExporting, setIsExporting] = useState(false)
   const [imageAspect, setImageAspect] = useState<number | null>(null)
@@ -26,7 +28,6 @@ export function TracingWorkspace() {
   const drawCanvasRef = useRef<HTMLCanvasElement>(null)
   const currentStrokeRef = useRef<Stroke | null>(null)
 
-  const color = assignment ? getTracingColor(assignment.id) : '#000'
   const currentImage = assignment?.images[currentIndex]
 
   // Load all saved strokes for this assignment once, up front.
@@ -38,6 +39,7 @@ export function TracingWorkspace() {
     }
     setStrokesByFile(initial)
     setCurrentIndex(0)
+    setColor(getTracingColor(assignment.id))
   }, [assignment])
 
   // Draw the base image + replay saved strokes whenever the current image changes.
@@ -63,15 +65,14 @@ export function TracingWorkspace() {
 
       const drawCtx = drawCanvas.getContext('2d')
       if (drawCtx) {
-        replayStrokes(drawCtx, strokesByFile[currentImage.fileName] ?? [], width, height)
+        // Read straight from storage (always current) rather than state, which may not
+        // have finished loading yet on first mount.
+        replayStrokes(drawCtx, loadStrokes(assignment.id, currentImage.fileName), width, height)
       }
 
       setImageAspect(width / height)
     }
     img.src = currentImage.url
-    // strokesByFile intentionally omitted: this effect should only re-run on image change,
-    // strokes are replayed fresh from state at that moment via the closure above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignment, currentImage])
 
   // Keep isFullscreen in sync when the browser exits fullscreen (e.g. via Esc).
@@ -161,6 +162,11 @@ export function TracingWorkspace() {
     }
   }, [assignment, strokesByFile])
 
+  const handleColorSelect = useCallback((value: string) => {
+    setColor(value)
+    setTool('pen')
+  }, [])
+
   if (!assignmentId || !assignment) return <Navigate to="/tools/tracing" replace />
 
   return (
@@ -186,17 +192,33 @@ export function TracingWorkspace() {
         </button>
       </div>
 
-      <div className="tracing-canvas-area">
-        <div className="tracing-canvas-wrapper" style={imageAspect ? { aspectRatio: `${imageAspect}` } : undefined}>
-          <canvas ref={baseCanvasRef} className="tracing-canvas tracing-canvas--base" />
-          <canvas
-            ref={drawCanvasRef}
-            className="tracing-canvas tracing-canvas--draw"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-          />
+      <div className="tracing-main">
+        <div className="tracing-colors" role="group" aria-label="Pen color">
+          {TRACE_COLORS.map((swatch) => (
+            <button
+              key={swatch.value}
+              type="button"
+              className={`tracing-color-swatch${tool === 'pen' && color === swatch.value ? ' selected' : ''}`}
+              style={{ backgroundColor: swatch.value }}
+              title={swatch.name}
+              aria-label={swatch.name}
+              onClick={() => handleColorSelect(swatch.value)}
+            />
+          ))}
+        </div>
+
+        <div className="tracing-canvas-area">
+          <div className="tracing-canvas-wrapper" style={imageAspect ? { aspectRatio: `${imageAspect}` } : undefined}>
+            <canvas ref={baseCanvasRef} className="tracing-canvas tracing-canvas--base" />
+            <canvas
+              ref={drawCanvasRef}
+              className="tracing-canvas tracing-canvas--draw"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            />
+          </div>
         </div>
       </div>
 
