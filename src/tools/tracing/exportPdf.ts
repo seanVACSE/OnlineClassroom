@@ -15,6 +15,24 @@ export async function exportAssignmentAsPdf(
   assignment: TracingAssignment,
   strokesByFile: Record<string, Stroke[]>,
 ): Promise<void> {
+  const doc = await buildAssignmentPdf(assignment, strokesByFile)
+  doc?.save(`${assignment.name}.pdf`)
+}
+
+// Returns the assignment PDF as a base64 string (no data URL prefix) for uploading.
+export async function exportAssignmentAsPdfBase64(
+  assignment: TracingAssignment,
+  strokesByFile: Record<string, Stroke[]>,
+): Promise<string> {
+  const doc = await buildAssignmentPdf(assignment, strokesByFile)
+  if (!doc) return ''
+  return doc.output('datauristring').split(',')[1] ?? ''
+}
+
+async function buildAssignmentPdf(
+  assignment: TracingAssignment,
+  strokesByFile: Record<string, Stroke[]>,
+): Promise<jsPDF | undefined> {
   let doc: jsPDF | undefined
 
   for (const image of assignment.images) {
@@ -42,5 +60,5 @@ export async function exportAssignmentAsPdf(
     doc.addImage(dataUrl, 'PNG', 0, 0, width, height)
   }
 
-  doc?.save(`${assignment.name}.pdf`)
+  return doc
 }

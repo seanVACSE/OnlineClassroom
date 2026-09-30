@@ -164,6 +164,60 @@
   cursor: not-allowed;
 }
 
+.tracing-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(27, 31, 28, 0.55);
+}
+
+.tracing-modal {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  width: min(360px, 100%);
+  padding: 28px;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+  color: #28362d;
+}
+
+.tracing-modal p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.tracing-modal-detail {
+  color: #8a4935;
+  font-size: 12px;
+}
+
+.tracing-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tracing-modal-actions button,
+.tracing-modal-actions a {
+  padding: 8px 16px;
+  border: 1px solid #e1e6df;
+  border-radius: 8px;
+  background: #fff;
+  color: #2d392f;
+  font-size: 13px;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.tracing-success-icon {
+  color: #34784d;
+}
+
 .tracing-colors {
   display: flex;
   flex-wrap: wrap;

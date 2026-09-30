@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Download, Eraser, Maximize, Minimize, PenLine, Trash2 } from 'lucide-react'
+import confetti from 'canvas-confetti'
+import { ArrowLeft, CheckCircle2, Eraser, Maximize, Minimize, PenLine, Send, Trash2 } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { getTracingAssignment } from '../../data/tracingAssets'
 import { getTracingColor } from '../../data/tracingColors'
 import { TRACE_COLORS } from './palette'
 import { clearStrokes, loadStrokes, saveStrokes } from './tracingStorage'
 import { drawStroke, replayStrokes, widthForTool, type Stroke, type TraceTool, type TracePoint } from './tracingStrokes'
-import { exportAssignmentAsPdf } from './exportPdf'
+import { exportAssignmentAsPdfBase64 } from './exportPdf'
+import { submitTracingPdf } from './tracingSubmit'
 import './Tracing.css'
 
 const MAX_CANVAS_DIMENSION = 1400
+
+type SubmitState = 'idle' | 'confirming' | 'submitting' | 'success' | 'error'
 
 export function TracingWorkspace() {
   const { assignmentId } = useParams()
@@ -19,9 +23,10 @@ export function TracingWorkspace() {
   const [tool, setTool] = useState<TraceTool>('pen')
   const [color, setColor] = useState(() => (assignment ? getTracingColor(assignment.id) : TRACE_COLORS[0].value))
   const [strokesByFile, setStrokesByFile] = useState<Record<string, Stroke[]>>({})
-  const [isExporting, setIsExporting] = useState(false)
   const [imageAspect, setImageAspect] = useState<number | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [submitState, setSubmitState] = useState<SubmitState>('idle')
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const baseCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -151,13 +156,28 @@ export function TracingWorkspace() {
     if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height)
   }, [assignment, currentImage])
 
-  const handleExport = useCallback(async () => {
+  const handleSubmitClick = useCallback(() => {
+    setSubmitState('confirming')
+  }, [])
+
+  const handleConfirmSubmit = useCallback(async () => {
     if (!assignment) return
-    setIsExporting(true)
+    setSubmitState('submitting')
+    setSubmitError(null)
     try {
-      await exportAssignmentAsPdf(assignment, strokesByFile)
-    } finally {
-      setIsExporting(false)
+      const pdfData = await exportAssignmentAsPdfBase64(assignment, strokesByFile)
+      const success = await submitTracingPdf('', assignment.name, pdfData)
+      if (success) {
+        setSubmitState('success')
+        confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } })
+      } else {
+        setSubmitError('The server did not confirm the submission.')
+        setSubmitState('error')
+      }
+    } catch (error) {
+      console.error('[tracing submit] failed', error)
+      setSubmitError(error instanceof Error ? error.message : 'Unknown error')
+      setSubmitState('error')
     }
   }, [assignment, strokesByFile])
 
@@ -186,8 +206,13 @@ export function TracingWorkspace() {
         <button type="button" onClick={toggleFullscreen}>
           {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />} {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
         </button>
-        <button type="button" className="tracing-export" onClick={handleExport} disabled={isExporting}>
-          <Download size={16} /> {isExporting ? 'Exporting…' : 'Export PDF'}
+        <button
+          type="button"
+          className="tracing-export"
+          onClick={handleSubmitClick}
+          disabled={submitState === 'submitting'}
+        >
+          <Send size={16} /> Submit
         </button>
       </div>
 
@@ -234,6 +259,51 @@ export function TracingWorkspace() {
           Next
         </button>
       </div>
+
+      {submitState === 'confirming' && (
+        <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
+          <div className="tracing-modal">
+            <p>Submit this tracing?</p>
+            <div className="tracing-modal-actions">
+              <button type="button" onClick={() => setSubmitState('idle')}>Cancel</button>
+              <button type="button" className="tracing-export" onClick={handleConfirmSubmit}>Yes, submit</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {submitState === 'submitting' && (
+        <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
+          <div className="tracing-modal">
+            <p>Submitting…</p>
+          </div>
+        </div>
+      )}
+
+      {submitState === 'error' && (
+        <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
+          <div className="tracing-modal">
+            <p>Something went wrong submitting your work. Please try again.</p>
+            {submitError && <p className="tracing-modal-detail">{submitError}</p>}
+            <div className="tracing-modal-actions">
+              <button type="button" onClick={() => setSubmitState('idle')}>Close</button>
+              <button type="button" className="tracing-export" onClick={handleConfirmSubmit}>Try again</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {submitState === 'success' && (
+        <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
+          <div className="tracing-modal tracing-modal-success">
+            <CheckCircle2 size={56} className="tracing-success-icon" />
+            <p>Great job! Your tracing was submitted.</p>
+            <div className="tracing-modal-actions">
+              <Link className="tracing-export" to="/tools/tracing">Back to assignments</Link>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
