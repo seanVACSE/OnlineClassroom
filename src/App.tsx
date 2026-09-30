@@ -1,31 +1,44 @@
-import { ArrowLeft, ArrowUpRight, PenLine } from 'lucide-react'
+import { ArrowLeft, PenLine } from 'lucide-react'
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { TracingAssignmentList } from './tools/tracing/TracingAssignmentList'
 import { TracingWorkspace } from './tools/tracing/TracingWorkspace'
 import './App.css'
 
 const tools = [
-  { id: 'tracing', name: 'Tracing', description: 'Trace over assigned images.', icon: PenLine, color: 'coral' },
+  { id: 'tracing', name: 'Tracing', icon: PenLine },
 ]
+
+const HOME_IMAGES = {
+  banner: `${import.meta.env.BASE_URL}images/home/banner.png`,
+  background: `${import.meta.env.BASE_URL}images/home/background.png`,
+  tracing: `${import.meta.env.BASE_URL}images/home/tracing.png`,
+  title: `${import.meta.env.BASE_URL}images/home/toptext.png`,
+}
 
 function HomePage() {
   return (
-    <main className="dashboard">
-      <header className="page-heading">
-        <h1>Mr. Berndlmaier's Classroom</h1>
-        <p>Choose a tool to get started.</p>
+    <main className="home-page">
+      <header className="home-banner" style={{ backgroundImage: `url("${HOME_IMAGES.banner}")` }}>
+        <h1 className="home-banner-title">
+          <img src={HOME_IMAGES.title} alt="Mr. Berndlmaier's Classroom" />
+        </h1>
       </header>
-      <section className="tool-grid" aria-label="Classroom tools">
-        {tools.map(({ id, name, description, icon: Icon, color }) => (
-          <Link className="tool-card" to={`/tools/${id}`} key={id}>
-            <span className={`tool-icon tool-icon--${color}`}><Icon size={24} aria-hidden="true" /></span>
-            <span className="tool-card-copy">
-              <strong>{name}</strong>
-              <span>{description}</span>
-            </span>
-            <ArrowUpRight className="tool-arrow" size={18} aria-hidden="true" />
-          </Link>
-        ))}
+      <section
+        className="home-content"
+        aria-label="Classroom tools"
+        style={{ backgroundImage: `url("${HOME_IMAGES.background}")` }}
+      >
+        <div className="home-tool-grid">
+          {tools.map(({ id, name, icon: Icon }) => (
+            <Link className="home-tool-link" to={`/tools/${id}`} key={id} aria-label={name}>
+              <span className="home-tool-image">
+                <Icon className="home-tool-fallback" size={76} strokeWidth={1.5} aria-hidden="true" />
+                <img src={HOME_IMAGES.tracing} alt="" onError={(event) => { event.currentTarget.hidden = true }} />
+              </span>
+              <span className="home-tool-title">{name}</span>
+            </Link>
+          ))}
+        </div>
       </section>
     </main>
   )
