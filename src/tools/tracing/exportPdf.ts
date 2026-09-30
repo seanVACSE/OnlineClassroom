@@ -2,6 +2,9 @@ import { jsPDF } from 'jspdf'
 import type { TracingAssignment } from '../../data/tracingAssets'
 import { drawStroke, type Stroke } from './tracingStrokes'
 
+const MAX_EXPORT_DIMENSION = 1400
+const JPEG_QUALITY = 0.82
+
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -37,8 +40,9 @@ async function buildAssignmentPdf(
 
   for (const image of assignment.images) {
     const img = await loadImage(image.url)
-    const width = img.naturalWidth
-    const height = img.naturalHeight
+    const scale = Math.min(1, MAX_EXPORT_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight))
+    const width = Math.round(img.naturalWidth * scale)
+    const height = Math.round(img.naturalHeight * scale)
 
     const canvas = document.createElement('canvas')
     canvas.width = width
@@ -46,18 +50,27 @@ async function buildAssignmentPdf(
     const ctx = canvas.getContext('2d')
     if (!ctx) continue
 
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, width, height)
     ctx.drawImage(img, 0, 0, width, height)
+
+    const strokesCanvas = document.createElement('canvas')
+    strokesCanvas.width = width
+    strokesCanvas.height = height
+    const strokesCtx = strokesCanvas.getContext('2d')
+    if (!strokesCtx) continue
     for (const stroke of strokesByFile[image.fileName] ?? []) {
-      drawStroke(ctx, stroke, width, height)
+      drawStroke(strokesCtx, stroke, width, height)
     }
-    const dataUrl = canvas.toDataURL('image/png')
+    ctx.drawImage(strokesCanvas, 0, 0)
+    const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY)
 
     if (!doc) {
       doc = new jsPDF({ unit: 'px', format: [width, height], orientation: width >= height ? 'landscape' : 'portrait' })
     } else {
       doc.addPage([width, height], width >= height ? 'landscape' : 'portrait')
     }
-    doc.addImage(dataUrl, 'PNG', 0, 0, width, height)
+    doc.addImage(dataUrl, 'JPEG', 0, 0, width, height)
   }
 
   return doc
