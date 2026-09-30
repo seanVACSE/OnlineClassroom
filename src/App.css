@@ -214,6 +214,7 @@
 }
 
 .home-tool-title {
+  color: #fff;
   font-family: var(--display);
   font-size: 22px;
   font-weight: 600;

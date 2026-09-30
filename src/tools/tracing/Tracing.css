@@ -1,6 +1,115 @@
+.tracing-page {
+  min-height: 100vh;
+  background: #e7eee5;
+}
+
+.tracing-banner {
+  position: relative;
+  display: grid;
+  min-height: 230px;
+  padding: 32px 24px;
+  place-items: center;
+  background-color: #7c9e8a;
+  background-position: center;
+  background-size: cover;
+  text-align: center;
+}
+
+.tracing-banner .back-link {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  color: #fff;
+}
+
+.tracing-banner-title {
+  margin: 0;
+  color: #fff;
+  font-family: var(--display);
+  font-size: 42px;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.tracing-content {
+  min-height: calc(100vh - 230px);
+  padding: 52px 28px;
+  background-color: #e7eee5;
+  background-position: center;
+  background-size: cover;
+}
+
 .tracing-empty {
   text-align: center;
   color: #68736b;
+}
+
+.tracing-assignment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+  justify-content: center;
+  gap: 28px;
+}
+
+.tracing-assignment-link {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #294d45;
+  text-align: center;
+  text-decoration: none;
+}
+
+.tracing-assignment-image {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1;
+  place-items: center;
+  overflow: hidden;
+  border: 3px solid #fff;
+  border-radius: 20px;
+  background: #f2c963;
+  box-shadow: 0 5px 0 rgba(41, 77, 69, 0.24);
+  color: #8a4935;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.tracing-assignment-fallback {
+  grid-area: 1 / 1;
+}
+
+.tracing-assignment-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tracing-assignment-link:hover .tracing-assignment-image {
+  box-shadow: 0 8px 0 rgba(41, 77, 69, 0.24);
+  transform: translateY(-3px);
+}
+
+.tracing-assignment-link:focus-visible {
+  border-radius: 5px;
+  outline: 3px solid #d26747;
+  outline-offset: 5px;
+}
+
+.tracing-assignment-title {
+  color: #fff;
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tracing-assignment-count {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .tracing-workspace {
@@ -184,4 +293,24 @@
 .tracing-workspace.is-fullscreen .tracing-canvas-area {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+@media (max-width: 500px) {
+  .tracing-banner {
+    min-height: 185px;
+    padding: 24px 16px;
+  }
+
+  .tracing-banner-title {
+    font-size: 34px;
+  }
+
+  .tracing-content {
+    min-height: calc(100vh - 185px);
+    padding: 32px 24px;
+  }
+
+  .tracing-assignment-grid {
+    grid-template-columns: minmax(0, 220px);
+  }
 }
