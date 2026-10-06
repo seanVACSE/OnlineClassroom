@@ -22,6 +22,7 @@ export function TracingWorkspace() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [tool, setTool] = useState<TraceTool>('pen')
   const [color, setColor] = useState(() => (assignment ? getTracingColor(assignment.id) : TRACE_COLORS[0].value))
+  const [brushScale, setBrushScale] = useState(1)
   const [strokesByFile, setStrokesByFile] = useState<Record<string, Stroke[]>>({})
   const [imageAspect, setImageAspect] = useState<number | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -110,13 +111,13 @@ export function TracingWorkspace() {
     if (!canvas) return
 
     const point = getNormalizedPoint(event)
-    const width = widthForTool(tool, Math.min(canvas.width, canvas.height))
+    const width = widthForTool(tool, Math.min(canvas.width, canvas.height), brushScale)
     const stroke: Stroke = { tool, color, width, points: [point] }
     currentStrokeRef.current = stroke
 
     const ctx = canvas.getContext('2d')
     if (ctx) drawStroke(ctx, stroke, canvas.width, canvas.height)
-  }, [color, currentImage, getNormalizedPoint, tool])
+  }, [brushScale, color, currentImage, getNormalizedPoint, tool])
 
   const handlePointerMove = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
     const stroke = currentStrokeRef.current
@@ -229,6 +230,17 @@ export function TracingWorkspace() {
               onClick={() => handleColorSelect(swatch.value)}
             />
           ))}
+          <input
+            type="range"
+            className="tracing-size-slider"
+            min={1}
+            max={6}
+            step={1}
+            value={brushScale}
+            onChange={(event) => setBrushScale(Number(event.target.value))}
+            title="Brush size"
+            aria-label="Brush size"
+          />
         </div>
 
         <div className="tracing-canvas-area">

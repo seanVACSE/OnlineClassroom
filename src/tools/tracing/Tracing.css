@@ -234,6 +234,18 @@
   cursor: pointer;
 }
 
+.tracing-size-slider {
+  flex: 0 0 100%;
+  max-width: 160px;
+  accent-color: #34784d;
+}
+
+.tracing-workspace.is-fullscreen .tracing-size-slider {
+  grid-column: 1 / -1;
+  width: 82px;
+  max-width: none;
+}
+
 .tracing-color-swatch.selected {
   border-color: #28362d;
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #34784d;

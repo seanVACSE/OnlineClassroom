@@ -15,8 +15,8 @@ export interface Stroke {
 const PEN_WIDTH_FRACTION = 0.006
 const ERASER_WIDTH_FRACTION = 0.03
 
-export function widthForTool(tool: TraceTool, canvasSize: number): number {
-  const fraction = tool === 'pen' ? PEN_WIDTH_FRACTION : ERASER_WIDTH_FRACTION
+export function widthForTool(tool: TraceTool, canvasSize: number, penScale = 1): number {
+  const fraction = tool === 'pen' ? PEN_WIDTH_FRACTION * penScale : ERASER_WIDTH_FRACTION
   return Math.max(1, canvasSize * fraction)
 }
 
