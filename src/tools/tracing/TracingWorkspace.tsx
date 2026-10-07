@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
-import { ArrowLeft, CheckCircle2, Eraser, Maximize, Minimize, PenLine, Send, Trash2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Eraser, Hand, Maximize, Minimize, PenLine, Send, Trash2, ZoomIn, ZoomOut } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { getTracingAssignment } from '../../data/tracingAssets'
 import { getTracingColor } from '../../data/tracingColors'
@@ -12,6 +12,9 @@ import { submitTracingPdf } from './tracingSubmit'
 import './Tracing.css'
 
 const MAX_CANVAS_DIMENSION = 1400
+const MIN_ZOOM = 1
+const MAX_ZOOM = 3
+const ZOOM_STEP = 0.25
 
 type SubmitState = 'idle' | 'confirming' | 'submitting' | 'success' | 'error'
 
@@ -21,6 +24,10 @@ export function TracingWorkspace() {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [tool, setTool] = useState<TraceTool>('pen')
+  const [isHandTool, setIsHandTool] = useState(false)
+  const [isPanning, setIsPanning] = useState(false)
+  const [zoom, setZoom] = useState(MIN_ZOOM)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
   const [color, setColor] = useState(() => (assignment ? getTracingColor(assignment.id) : TRACE_COLORS[0].value))
   const [brushScale, setBrushScale] = useState(1)
   const [strokesByFile, setStrokesByFile] = useState<Record<string, Stroke[]>>({})
@@ -34,6 +41,7 @@ export function TracingWorkspace() {
   const baseCanvasRef = useRef<HTMLCanvasElement>(null)
   const drawCanvasRef = useRef<HTMLCanvasElement>(null)
   const currentStrokeRef = useRef<Stroke | null>(null)
+  const panStartRef = useRef<{ pointerX: number; pointerY: number; panX: number; panY: number } | null>(null)
 
   const currentImage = assignment?.images[currentIndex]
 
@@ -52,6 +60,8 @@ export function TracingWorkspace() {
   // Draw the base image + replay saved strokes whenever the current image changes.
   useEffect(() => {
     if (!assignment || !currentImage) return
+    setZoom(MIN_ZOOM)
+    setPan({ x: 0, y: 0 })
     const baseCanvas = baseCanvasRef.current
     const drawCanvas = drawCanvasRef.current
     if (!baseCanvas || !drawCanvas) return
@@ -108,6 +118,11 @@ export function TracingWorkspace() {
   const handlePointerDown = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
     if (!currentImage) return
     event.currentTarget.setPointerCapture(event.pointerId)
+    if (isHandTool) {
+      panStartRef.current = { pointerX: event.clientX, pointerY: event.clientY, panX: pan.x, panY: pan.y }
+      setIsPanning(true)
+      return
+    }
     const canvas = drawCanvasRef.current
     if (!canvas) return
 
@@ -118,9 +133,17 @@ export function TracingWorkspace() {
 
     const ctx = canvas.getContext('2d')
     if (ctx) drawStroke(ctx, stroke, canvas.width, canvas.height)
-  }, [brushScale, color, currentImage, getNormalizedPoint, tool])
+  }, [brushScale, color, currentImage, getNormalizedPoint, isHandTool, pan, tool])
 
   const handlePointerMove = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
+    const panStart = panStartRef.current
+    if (panStart) {
+      setPan({
+        x: panStart.panX + event.clientX - panStart.pointerX,
+        y: panStart.panY + event.clientY - panStart.pointerY,
+      })
+      return
+    }
     const stroke = currentStrokeRef.current
     const canvas = drawCanvasRef.current
     if (!stroke || !canvas) return
@@ -136,6 +159,11 @@ export function TracingWorkspace() {
   }, [getNormalizedPoint])
 
   const handlePointerUp = useCallback(() => {
+    if (panStartRef.current) {
+      panStartRef.current = null
+      setIsPanning(false)
+      return
+    }
     const stroke = currentStrokeRef.current
     currentStrokeRef.current = null
     if (!stroke || !assignment || !currentImage) return
@@ -186,6 +214,12 @@ export function TracingWorkspace() {
   const handleColorSelect = useCallback((value: string) => {
     setColor(value)
     setTool('pen')
+    setIsHandTool(false)
+  }, [])
+
+  const resetView = useCallback(() => {
+    setZoom(MIN_ZOOM)
+    setPan({ x: 0, y: 0 })
   }, [])
 
   if (!assignmentId || !assignment) return <Navigate to="/tools/tracing" replace />
@@ -196,11 +230,23 @@ export function TracingWorkspace() {
       <h1>{assignment.name}</h1>
 
       <div className="tracing-toolbar">
-        <button type="button" className={tool === 'pen' ? 'active' : ''} onClick={() => setTool('pen')}>
+        <button type="button" className={tool === 'pen' && !isHandTool ? 'active' : ''} onClick={() => { setTool('pen'); setIsHandTool(false) }}>
           <PenLine size={16} /> Pen
         </button>
-        <button type="button" className={tool === 'eraser' ? 'active' : ''} onClick={() => setTool('eraser')}>
+        <button type="button" className={tool === 'eraser' && !isHandTool ? 'active' : ''} onClick={() => { setTool('eraser'); setIsHandTool(false) }}>
           <Eraser size={16} /> Eraser
+        </button>
+        <button type="button" className={isHandTool ? 'active' : ''} onClick={() => setIsHandTool((active) => !active)} title="Hand tool: drag to move the tracing" aria-label="Toggle hand tool">
+          <Hand size={16} /> Hand
+        </button>
+        <button type="button" onClick={() => setZoom((value) => Math.max(MIN_ZOOM, value - ZOOM_STEP))} disabled={zoom <= MIN_ZOOM} title="Zoom out" aria-label="Zoom out">
+          <ZoomOut size={16} />
+        </button>
+        <button type="button" className="tracing-zoom-level" onClick={resetView} title="Reset view" aria-label={`Reset view, currently ${Math.round(zoom * 100)} percent`}>
+          {Math.round(zoom * 100)}%
+        </button>
+        <button type="button" onClick={() => setZoom((value) => Math.min(MAX_ZOOM, value + ZOOM_STEP))} disabled={zoom >= MAX_ZOOM} title="Zoom in" aria-label="Zoom in">
+          <ZoomIn size={16} />
         </button>
         <button type="button" onClick={handleClear}>
           <Trash2 size={16} /> Clear
@@ -244,8 +290,14 @@ export function TracingWorkspace() {
           />
         </div>
 
-        <div className="tracing-canvas-area">
-          <div className="tracing-canvas-wrapper" style={imageAspect ? { aspectRatio: `${imageAspect}` } : undefined}>
+        <div className={`tracing-canvas-area${isHandTool ? ' is-hand-tool' : ''}${isPanning ? ' is-panning' : ''}`}>
+          <div
+            className="tracing-canvas-wrapper"
+            style={{
+              ...(imageAspect ? { aspectRatio: `${imageAspect}` } : {}),
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            }}
+          >
             <canvas ref={baseCanvasRef} className="tracing-canvas tracing-canvas--base" />
             <canvas
               ref={drawCanvasRef}
