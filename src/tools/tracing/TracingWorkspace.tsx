@@ -28,6 +28,7 @@ export function TracingWorkspace() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [studentName, setStudentName] = useState('')
 
   const containerRef = useRef<HTMLDivElement>(null)
   const baseCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -167,7 +168,7 @@ export function TracingWorkspace() {
     setSubmitError(null)
     try {
       const pdfData = await exportAssignmentAsPdfBase64(assignment, strokesByFile)
-      const success = await submitTracingPdf('', assignment.name, pdfData)
+      const success = await submitTracingPdf(studentName.trim() || 'Unknown', assignment.name, pdfData)
       if (success) {
         setSubmitState('success')
         confetti({ particleCount: 160, spread: 80, origin: { y: 0.6 } })
@@ -180,7 +181,7 @@ export function TracingWorkspace() {
       setSubmitError(error instanceof Error ? error.message : 'Unknown error')
       setSubmitState('error')
     }
-  }, [assignment, strokesByFile])
+  }, [assignment, studentName, strokesByFile])
 
   const handleColorSelect = useCallback((value: string) => {
     setColor(value)
@@ -276,6 +277,16 @@ export function TracingWorkspace() {
         <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
           <div className="tracing-modal">
             <p>Submit this tracing?</p>
+            <label className="tracing-name-field">
+              <span>Your name (optional)</span>
+              <input
+                type="text"
+                value={studentName}
+                onChange={(event) => setStudentName(event.target.value)}
+                placeholder="Unknown"
+                autoComplete="name"
+              />
+            </label>
             <div className="tracing-modal-actions">
               <button type="button" onClick={() => setSubmitState('idle')}>Cancel</button>
               <button type="button" className="tracing-export" onClick={handleConfirmSubmit}>Yes, submit</button>

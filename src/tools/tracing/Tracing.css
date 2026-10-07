@@ -196,6 +196,24 @@
   font-size: 12px;
 }
 
+.tracing-name-field {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  color: #28362d;
+  font-size: 13px;
+  text-align: left;
+}
+
+.tracing-name-field input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #cbd4cc;
+  border-radius: 6px;
+  color: #28362d;
+  font: inherit;
+}
+
 .tracing-modal-actions {
   display: flex;
   gap: 10px;
