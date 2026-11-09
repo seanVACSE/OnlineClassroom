@@ -1,17 +1,18 @@
-import { ArrowLeft, PenLine } from 'lucide-react'
+import { ArrowLeft, PenLine, Shapes } from 'lucide-react'
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { TracingAssignmentList } from './tools/tracing/TracingAssignmentList'
 import { TracingWorkspace } from './tools/tracing/TracingWorkspace'
+import { ShapePlayground } from './tools/shape-playground/ShapePlayground'
 import './App.css'
 
 const tools = [
-  { id: 'tracing', name: 'Tracing', icon: PenLine },
+  { id: 'tracing', name: 'Tracing', icon: PenLine, image: 'tracing.png' },
+  { id: 'shape-playground', name: 'Shape Playground', icon: Shapes, image: 'shape-playground.png' },
 ]
 
 const HOME_IMAGES = {
   banner: `${import.meta.env.BASE_URL}images/home/banner.png`,
   background: `${import.meta.env.BASE_URL}images/home/background.png`,
-  tracing: `${import.meta.env.BASE_URL}images/home/tracing.png`,
   title: `${import.meta.env.BASE_URL}images/home/toptext.png`,
 }
 
@@ -29,11 +30,11 @@ function HomePage() {
         style={{ backgroundImage: `url("${HOME_IMAGES.background}")` }}
       >
         <div className="home-tool-grid">
-          {tools.map(({ id, name, icon: Icon }) => (
+          {tools.map(({ id, name, icon: Icon, image }) => (
             <Link className="home-tool-link" to={`/tools/${id}`} key={id} aria-label={name}>
               <span className="home-tool-image">
                 <Icon className="home-tool-fallback" size={76} strokeWidth={1.5} aria-hidden="true" />
-                <img src={HOME_IMAGES.tracing} alt="" onError={(event) => { event.currentTarget.hidden = true }} />
+                <img src={`${import.meta.env.BASE_URL}images/home/${image}`} alt="" onError={(event) => { event.currentTarget.hidden = true }} />
               </span>
               <span className="home-tool-title">{name}</span>
             </Link>
@@ -65,6 +66,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/tools/tracing" element={<TracingAssignmentList />} />
       <Route path="/tools/tracing/:assignmentId" element={<TracingWorkspace />} />
+      <Route path="/tools/shape-playground" element={<ShapePlayground />} />
       <Route path="/tools/:toolId" element={<ToolPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

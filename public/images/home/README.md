@@ -1,3 +1,6 @@
+# Shape Playground
+
+Optionally add `shape-playground.png` here for the Shape Playground tile on the classroom home page. Without it, the tile displays a shapes icon.
 Place the home page images in this folder using these filenames:
 
 - `banner.png` for the image behind the classroom title
