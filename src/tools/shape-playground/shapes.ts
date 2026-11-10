@@ -2,9 +2,8 @@ export const SHAPE_TYPES = ['circle', 'square', 'triangle', 'rectangle', 'oval',
 
 export type ShapeType = typeof SHAPE_TYPES[number]
 
-export interface PlaygroundShape {
+interface PlaygroundItemBase {
   id: string
-  type: ShapeType
   x: number
   y: number
   scaleX: number
@@ -12,6 +11,11 @@ export interface PlaygroundShape {
   rotation: number
   color: string
 }
+
+export type PlaygroundShape = PlaygroundItemBase & (
+  | { type: ShapeType }
+  | { type: 'text'; text: string }
+)
 
 export const COLORS = [
   { name: 'Red', value: '#e65e55' },

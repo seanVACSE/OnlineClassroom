@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { TracingAssignmentList } from './tools/tracing/TracingAssignmentList'
 import { TracingWorkspace } from './tools/tracing/TracingWorkspace'
 import { ShapePlayground } from './tools/shape-playground/ShapePlayground'
+import { ShapeActivitySelect, ShapeGradeSelect, ShapeGame } from './tools/shape-playground/ShapeActivities'
 import './App.css'
 
 const tools = [
@@ -66,7 +67,11 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/tools/tracing" element={<TracingAssignmentList />} />
       <Route path="/tools/tracing/:assignmentId" element={<TracingWorkspace />} />
-      <Route path="/tools/shape-playground" element={<ShapePlayground />} />
+      <Route path="/tools/shape-playground" element={<ShapeActivitySelect />} />
+      <Route path="/tools/shape-playground/free" element={<ShapePlayground />} />
+      <Route path="/tools/shape-playground/grades/:grade" element={<ShapeGradeSelect />} />
+      <Route path="/tools/shape-playground/grades/2-3/nametag" element={<ShapePlayground mode="nametag" />} />
+      <Route path="/tools/shape-playground/grades/:grade/:activity" element={<ShapeGame />} />
       <Route path="/tools/:toolId" element={<ToolPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
