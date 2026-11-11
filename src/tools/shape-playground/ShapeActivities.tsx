@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { ArrowLeft, ArrowRight, Check, Circle, LayoutGrid, Maximize, Minimize, Paintbrush, Shapes, Sparkles, Square, Star, Tags, Triangle } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { countingQuestions, patternQuestions, type ActivityShape } from './activityQuestions'
+import { countingQuestions, patternQuestions, sortingQuestions, type ActivityColor, type ActivityShape, type SortingQuestion } from './activityQuestions'
 import './ShapeActivities.css'
 
 const root = '/tools/shape-playground'
@@ -13,9 +13,100 @@ function CardImage({ name, children }: { name: string; children: ReactNode }) {
   return image ? <img className="activity-card-image" src={image} alt="" /> : children
 }
 
-function Picture({ shape, className = '' }: { shape: ActivityShape; className?: string }) {
+function Picture({ shape, color, className = '' }: { shape: ActivityShape; color?: ActivityColor; className?: string }) {
   const Icon = shapeIcons[shape]
-  return <Icon className={`activity-picture activity-picture--${shape} ${className}`} aria-hidden="true" strokeWidth={2} />
+  return <Icon className={`activity-picture activity-picture--${shape} ${color ? `activity-color--${color}` : ''} ${className}`} aria-hidden="true" strokeWidth={2} />
+}
+
+function SortingRound({ question, onResult }: { question: SortingQuestion; onResult: (result: 'wrong' | 'correct' | null) => void }) {
+  const [placed, setPlaced] = useState<Record<number, string>>({})
+  const [selected, setSelected] = useState<number | null>(null)
+  const [drag, setDrag] = useState<{ index: number; x: number; y: number } | null>(null)
+  const pointer = useRef<{ index: number; x: number; y: number; moved: boolean } | null>(null)
+  const skipClick = useRef(false)
+  const binsRef = useRef<HTMLDivElement>(null)
+
+  function place(index: number, bin: string) {
+    if (question.shapes[index][question.sortBy] !== bin) {
+      onResult('wrong')
+      return
+    }
+    const next = { ...placed, [index]: bin }
+    setPlaced(next)
+    setSelected(null)
+    onResult(Object.keys(next).length === question.shapes.length ? 'correct' : null)
+  }
+
+  function startDrag(event: PointerEvent<HTMLButtonElement>, index: number) {
+    if (event.button !== 0) return
+    skipClick.current = false
+    pointer.current = { index, x: event.clientX, y: event.clientY, moved: false }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  function moveDrag(event: PointerEvent<HTMLButtonElement>) {
+    const start = pointer.current
+    if (!start) return
+    const x = event.clientX - start.x
+    const y = event.clientY - start.y
+    if (Math.hypot(x, y) > 8) start.moved = true
+    if (start.moved) setDrag({ index: start.index, x, y })
+  }
+
+  function endDrag(event: PointerEvent<HTMLButtonElement>) {
+    const start = pointer.current
+    pointer.current = null
+    setDrag(null)
+    if (!start?.moved) return
+    skipClick.current = true
+    const bins = binsRef.current?.querySelectorAll<HTMLButtonElement>('[data-bin]') ?? []
+    for (const bin of bins) {
+      const rect = bin.getBoundingClientRect()
+      if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom && bin.dataset.bin) {
+        place(start.index, bin.dataset.bin)
+        return
+      }
+    }
+    setSelected(start.index)
+  }
+
+  return (
+    <>
+      <h1 className="activity-prompt">Sort by {question.sortBy}!</h1>
+      <p className="activity-sort-instructions">Drag each shape to its group, or tap a shape and then its group.</p>
+      <div className="activity-sort-tray" aria-label="Shapes to sort">
+        {question.shapes.map((item, index) => !placed[index] && (
+          <button
+            key={index}
+            className={`activity-sort-piece ${selected === index ? 'is-selected' : ''} ${drag?.index === index ? 'is-dragging' : ''}`}
+            style={drag?.index === index ? { transform: `translate(${drag.x}px, ${drag.y}px)` } : undefined}
+            aria-label={`${item.color} ${item.shape}`}
+            aria-pressed={selected === index}
+            onPointerDown={(event) => startDrag(event, index)}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+            onPointerCancel={() => { pointer.current = null; setDrag(null) }}
+            onClick={(event) => {
+              if (skipClick.current && event.detail !== 0) { skipClick.current = false; return }
+              skipClick.current = false
+              setSelected(selected === index ? null : index)
+            }}
+          ><Picture shape={item.shape} color={item.color} /></button>
+        ))}
+        {Object.keys(placed).length === question.shapes.length && <span>All sorted!</span>}
+      </div>
+      <div className="activity-sort-bins" ref={binsRef}>
+        {question.bins.map((bin) => (
+          <button key={bin} data-bin={bin} className="activity-sort-bin" aria-label={`${question.sortBy === 'color' ? `${bin} shapes` : `${bin}s`}, ${Object.values(placed).filter((value) => value === bin).length} sorted`} onClick={() => { if (selected !== null) place(selected, bin) }}>
+            <strong>{question.sortBy === 'color' ? `${bin} shapes` : `${bin}s`}</strong>
+            <span className="activity-sort-bin-items">
+              {question.shapes.map((item, index) => placed[index] === bin && <Picture key={index} shape={item.shape} color={item.color} />)}
+            </span>
+          </button>
+        ))}
+      </div>
+    </>
+  )
 }
 
 function ActivityHeader({ back, title, backLabel }: { back: string; title: string; backLabel: string }) {
@@ -68,6 +159,10 @@ export function ShapeGradeSelect() {
                 <CardImage name="shape-patterns"><span className="activity-card-shapes"><Picture shape="square" /><Picture shape="star" /></span></CardImage>
                 <strong>2. Shape Patterns</strong><span>10 questions</span>
               </Link>
+              <Link className="activity-card activity-card--green" to={`${root}/grades/k-1/sort`}>
+                <CardImage name="sort-the-shapes"><span className="activity-card-shapes"><Picture shape="circle" color="yellow" /><Picture shape="square" color="yellow" /></span></CardImage>
+                <strong>3. Shape Sort</strong><span>6 sorting rounds</span>
+              </Link>
             </div>
           </>
         ) : (
@@ -87,11 +182,11 @@ export function ShapeGradeSelect() {
 
 export function ShapeGame() {
   const { grade, activity } = useParams()
-  if (grade !== 'k-1' || (activity !== 'count' && activity !== 'patterns')) return <Navigate to={root} replace />
+  if (grade !== 'k-1' || (activity !== 'count' && activity !== 'patterns' && activity !== 'sort')) return <Navigate to={root} replace />
   return <Game key={activity} activity={activity} />
 }
 
-function Game({ activity }: { activity: 'count' | 'patterns' }) {
+function Game({ activity }: { activity: 'count' | 'patterns' | 'sort' }) {
   const [index, setIndex] = useState(0)
   const [result, setResult] = useState<'wrong' | 'correct' | null>(null)
   const [finished, setFinished] = useState(false)
@@ -100,7 +195,8 @@ function Game({ activity }: { activity: 'count' | 'patterns' }) {
   const gameRef = useRef<HTMLElement>(null)
   const count = countingQuestions[index]
   const pattern = patternQuestions[index]
-  const total = activity === 'count' ? countingQuestions.length : patternQuestions.length
+  const total = activity === 'count' ? countingQuestions.length : activity === 'sort' ? sortingQuestions.length : patternQuestions.length
+  const unit = activity === 'sort' ? 'round' : 'question'
 
   useEffect(() => {
     const update = () => setFullscreen(document.fullscreenElement === gameRef.current)
@@ -132,7 +228,7 @@ function Game({ activity }: { activity: 'count' | 'patterns' }) {
     <main className="activity-game" ref={gameRef}>
       <div className="activity-game-header">
         <Link className="activity-back" to={`${root}/grades/k-1`} aria-label="Back to grades K–1 activities"><ArrowLeft size={22} /><span>Back</span></Link>
-        <span className="activity-game-title">{activity === 'count' ? 'Count the Shapes' : 'Shape Patterns'}</span>
+        <span className="activity-game-title">{activity === 'count' ? 'Count the Shapes' : activity === 'sort' ? 'Shape Sort' : 'Shape Patterns'}</span>
         <button className="activity-fullscreen" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}</button>
       </div>
       {fullscreenError && <p className="activity-fullscreen-error" role="status">Fullscreen is unavailable in this browser.</p>}
@@ -140,7 +236,7 @@ function Game({ activity }: { activity: 'count' | 'patterns' }) {
         <section className="activity-finished">
           <Sparkles size={72} aria-hidden="true" />
           <h1>Great job!</h1>
-          <p>You finished all {total} questions!</p>
+          <p>You finished all {total} {unit}s!</p>
           <div className="activity-finish-actions">
             <button onClick={() => { setIndex(0); setFinished(false); setResult(null) }}>Play again</button>
             <Link to={`${root}/grades/k-1`}>More games</Link>
@@ -148,20 +244,27 @@ function Game({ activity }: { activity: 'count' | 'patterns' }) {
         </section>
       ) : (
         <section className="activity-round">
-          <div className="activity-progress" aria-label={`Question ${index + 1} of ${total}`}>
+          <div className="activity-progress" aria-label={`${unit} ${index + 1} of ${total}`}>
             <span>{index + 1} / {total}</span>
             <div className="activity-progress-track"><div style={{ width: `${(index + 1) / total * 100}%` }} /></div>
           </div>
           {activity === 'count' ? (
             <>
-              <h1 className="activity-prompt" aria-label={`How many ${count.target} shapes?`}>How many <Picture shape={count.target} /> ?</h1>
-              <div className="activity-shape-board" aria-label={`Shapes to count: ${count.shapes.join(', ')}`}>
-                {count.shapes.map((shape, i) => <Picture key={i} shape={shape} />)}
+              <h1 className="activity-prompt" aria-label={`How many ${count.color ? `${count.color} ` : ''}${count.target}s${count.color ? '' : ' of any color'}?`}>
+                How many <Picture shape={count.target} color={count.color} className={count.color ? '' : 'activity-picture--any-color'} /> {count.color ? '?' : 'of any color?'}
+              </h1>
+              <div className="activity-shape-board activity-count-board" aria-label={`Shapes to count: ${count.shapes.map((item) => `${item.color} ${item.shape}`).join(', ')}`}>
+                {count.shapes.map((item, i) => {
+                  const slot = (i * 5 + index * 3) % 12
+                  return <Picture key={i} shape={item.shape} color={item.color} className={`activity-count-slot-${slot}`} />
+                })}
               </div>
               <div className="activity-answers" aria-label="Choose a number">
                 {count.choices.map((choice) => <button key={choice} disabled={result === 'correct'} onClick={() => answer(choice === count.answer)}>{choice}</button>)}
               </div>
             </>
+          ) : activity === 'sort' ? (
+            <SortingRound key={index} question={sortingQuestions[index]} onResult={setResult} />
           ) : (
             <>
               <h1 className="activity-prompt">What comes next?</h1>

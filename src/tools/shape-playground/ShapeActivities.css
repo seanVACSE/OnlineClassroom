@@ -57,13 +57,18 @@
 .activity-progress { display: flex; align-items: center; gap: 12px; width: 100%; color: #627c6d; font-weight: 700; }
 .activity-progress-track { flex: 1; height: 10px; overflow: hidden; border-radius: 10px; background: #d3e2d5; }
 .activity-progress-track > div { height: 100%; border-radius: inherit; background: #4a9a7a; }
-.activity-prompt { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; font-family: var(--display); font-size: clamp(24px, 3vw, 36px); font-weight: 600; }
+.activity-prompt { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; text-align: center; font-family: var(--display); font-size: clamp(24px, 3vw, 36px); font-weight: 600; }
 .activity-prompt .activity-picture { width: 46px; height: 46px; }
 .activity-picture { flex: 0 0 auto; width: 64px; height: 64px; }
 .activity-picture--circle { color: #d7524b; fill: #ef8175; }
 .activity-picture--square { color: #367db1; fill: #80b8de; }
 .activity-picture--triangle { color: #a47b20; fill: #f3cb5a; }
 .activity-picture--star { color: #9561a7; fill: #cda3d8; }
+.activity-color--red { color: #aa3933; fill: #ef8175; }
+.activity-color--blue { color: #286690; fill: #80b8de; }
+.activity-color--yellow { color: #88640f; fill: #f3cb5a; }
+.activity-color--purple { color: #754187; fill: #cda3d8; }
+.activity-picture--any-color { color: #627c6d; fill: #d3e2d5; }
 .activity-shape-board {
   display: flex;
   flex: 1 1 auto;
@@ -80,6 +85,34 @@
   background: #fffefa;
 }
 .activity-pattern-board { flex-wrap: nowrap; gap: clamp(8px, 2vw, 28px); }
+.activity-count-board { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); justify-items: center; gap: 8px; min-height: 250px; }
+.activity-count-slot-0 { grid-area: 1 / 1; }
+.activity-count-slot-1 { grid-area: 1 / 2; }
+.activity-count-slot-2 { grid-area: 1 / 3; }
+.activity-count-slot-3 { grid-area: 1 / 4; }
+.activity-count-slot-4 { grid-area: 2 / 1; }
+.activity-count-slot-5 { grid-area: 2 / 2; }
+.activity-count-slot-6 { grid-area: 2 / 3; }
+.activity-count-slot-7 { grid-area: 2 / 4; }
+.activity-count-slot-8 { grid-area: 3 / 1; }
+.activity-count-slot-9 { grid-area: 3 / 2; }
+.activity-count-slot-10 { grid-area: 3 / 3; }
+.activity-count-slot-11 { grid-area: 3 / 4; }
+.activity-count-board .activity-picture:nth-child(3n + 1) { transform: translate(-8px, -5px); }
+.activity-count-board .activity-picture:nth-child(3n + 2) { transform: translate(8px, 5px); }
+.activity-count-board .activity-picture:nth-child(3n) { transform: translate(-4px, 7px); }
+.activity-sort-instructions { margin: 0 0 10px; text-align: center; }
+.activity-sort-tray { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 90px; padding: 8px; border: 2px solid #d8e6d9; border-radius: 18px; background: #fffefa; }
+.activity-sort-piece { position: relative; display: grid; width: 72px; height: 72px; place-items: center; padding: 4px; border: 2px solid transparent; border-radius: 12px; background: #f3f7ef; touch-action: none; user-select: none; }
+.activity-sort-piece.is-selected { border-color: #397d6d; background: #dceee0; }
+.activity-sort-piece.is-dragging { z-index: 2; opacity: .85; }
+.activity-sort-piece .activity-picture { width: 54px; height: 54px; pointer-events: none; }
+.activity-sort-bins { display: flex; flex: 1 0 auto; gap: 16px; width: 100%; min-height: 150px; margin-top: 12px; }
+.activity-sort-bin { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 10px; min-width: 0; padding: 12px; border: 3px dashed #91b49b; border-radius: 18px; color: #345b48; background: #fffefa; }
+.activity-sort-bin:hover { background: #e2f2e4; }
+.activity-sort-bin strong { font-family: var(--display); font-size: 22px; text-transform: capitalize; }
+.activity-sort-bin-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.activity-sort-bin-items .activity-picture { width: 42px; height: 42px; }
 .activity-question-mark { display: grid; flex: 0 0 auto; width: 70px; height: 70px; place-items: center; border: 3px dashed #9ab5a5; border-radius: 14px; color: #6a8a78; font-family: var(--display); font-size: 48px; }
 .activity-answers { display: flex; justify-content: center; gap: 18px; margin-top: 16px; }
 .activity-answers button { display: grid; width: 86px; height: 72px; place-items: center; border: 2px solid #b9d1c0; border-radius: 14px; background: #fffefa; color: #345b48; font-family: var(--display); font-size: 36px; font-weight: 600; box-shadow: 0 3px 0 #d2e0d2; }
@@ -103,6 +136,9 @@
   .activity-card { width: min(100%, 260px); min-height: 170px; }
   .activity-round { padding: 12px; }
   .activity-picture { width: 48px; height: 48px; }
+  .activity-sort-piece { width: 58px; height: 58px; }
+  .activity-sort-piece .activity-picture { width: 44px; height: 44px; }
+  .activity-sort-bin { padding: 8px; }
   .activity-pattern-board .activity-picture { width: min(10vw, 48px); height: min(10vw, 48px); }
   .activity-question-mark { width: 48px; height: 48px; font-size: 32px; }
 }
