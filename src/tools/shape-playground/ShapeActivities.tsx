@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
-import { ArrowLeft, ArrowRight, Check, Circle, LayoutGrid, Maximize, Minimize, Paintbrush, Shapes, Sparkles, Square, Star, Tags, Triangle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Circle, LayoutGrid, Maximize, Minimize, Paintbrush, Palette, Shapes, Sparkles, Square, Star, Tags, Triangle } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { countingQuestions, patternQuestions, sortingQuestions, type ActivityColor, type ActivityShape, type SortingQuestion } from './activityQuestions'
+import { MysteryPicture } from './MysteryPicture'
 import './ShapeActivities.css'
 
 const root = '/tools/shape-playground'
@@ -163,6 +164,10 @@ export function ShapeGradeSelect() {
                 <CardImage name="sort-the-shapes"><span className="activity-card-shapes"><Picture shape="circle" color="yellow" /><Picture shape="square" color="yellow" /></span></CardImage>
                 <strong>3. Shape Sort</strong><span>6 sorting rounds</span>
               </Link>
+              <Link className="activity-card activity-card--yellow" to={`${root}/grades/k-1/mystery-picture`}>
+                <CardImage name="math-mystery-picture"><Palette size={54} aria-hidden="true" /></CardImage>
+                <strong>4. Math Mystery Picture</strong><span>First grade addition</span>
+              </Link>
             </div>
           </>
         ) : (
@@ -182,6 +187,7 @@ export function ShapeGradeSelect() {
 
 export function ShapeGame() {
   const { grade, activity } = useParams()
+  if (grade === 'k-1' && activity === 'mystery-picture') return <MysteryPicture />
   if (grade !== 'k-1' || (activity !== 'count' && activity !== 'patterns' && activity !== 'sort')) return <Navigate to={root} replace />
   return <Game key={activity} activity={activity} />
 }
