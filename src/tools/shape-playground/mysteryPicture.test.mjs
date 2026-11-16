@@ -7,7 +7,9 @@ test('every picture section has an addition fact within 0–9 and a color for it
   assert.deepEqual(mysteryPuzzles.map((puzzle) => puzzle.difficulty), ['Easy', 'Medium', 'Medium'])
   assert.equal(new Set(mysteryPuzzles.map((puzzle) => puzzle.id)).size, mysteryPuzzles.length)
   for (const puzzle of mysteryPuzzles) {
-    assert.ok(puzzle.regions.length >= (puzzle.difficulty === 'Easy' ? 13 : 20))
+    assert.ok(puzzle.regions.length >= (puzzle.difficulty === 'Easy' ? 17 : 24))
+    assert.deepEqual(puzzle.regions.slice(0, 4).map((region) => region.id), ['sky-top-left', 'sky-top-right', 'sky-bottom-left', 'sky-bottom-right'])
+    assert.deepEqual(new Set(puzzle.regions.slice(0, 4).map((region) => region.addends.join('+'))), new Set(['0+3', '1+2', '2+1', '3+0']))
     assert.equal(new Set(puzzle.regions.map((region) => region.id)).size, puzzle.regions.length)
     for (const region of puzzle.regions) {
       assert.ok(region.path)

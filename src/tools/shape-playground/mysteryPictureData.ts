@@ -21,7 +21,18 @@ export const answerColors: Record<number, { name: string; fill: string }> = {
   9: { name: 'yellow', fill: '#f5d875' },
 }
 
+function skyRegions(labels: [[number, number], [number, number], [number, number], [number, number]]): PictureRegion[] {
+  const sections: Omit<PictureRegion, 'labelX' | 'labelY'>[] = [
+    { id: 'sky-top-left', name: 'upper left sky', path: 'M 0 0 H 400 V 260 H 0 Z', addends: [0, 3] },
+    { id: 'sky-top-right', name: 'upper right sky', path: 'M 400 0 H 800 V 260 H 400 Z', addends: [1, 2] },
+    { id: 'sky-bottom-left', name: 'lower left sky', path: 'M 0 260 H 400 V 520 H 0 Z', addends: [2, 1] },
+    { id: 'sky-bottom-right', name: 'lower right sky', path: 'M 400 260 H 800 V 520 H 400 Z', addends: [3, 0] },
+  ]
+  return sections.map((section, index) => ({ ...section, labelX: labels[index][0], labelY: labels[index][1] }))
+}
+
 const house: PictureRegion[] = [
+  ...skyRegions([[200, 45], [540, 50], [195, 350], [675, 350]]),
   { id: 'sun', name: 'sun', path: 'M 670 48 a 46 46 0 1 0 0 92 a 46 46 0 1 0 0 -92', labelX: 670, labelY: 94, addends: [5, 4] },
   { id: 'roof-left', name: 'left roof', path: 'M 210 230 L 400 105 L 400 230 Z', labelX: 345, labelY: 204, addends: [2, 3] },
   { id: 'roof-right', name: 'right roof', path: 'M 400 105 L 590 230 L 400 230 Z', labelX: 455, labelY: 204, addends: [4, 1] },
@@ -38,6 +49,7 @@ const house: PictureRegion[] = [
 ]
 
 const garden: PictureRegion[] = [
+  ...skyRegions([[35, 40], [480, 40], [70, 315], [730, 315]]),
   { id: 'sun', name: 'sun', path: 'M 670 50 a 50 50 0 1 0 0 100 a 50 50 0 1 0 0 -100', labelX: 670, labelY: 100, addends: [7, 2] },
   { id: 'cloud-left', name: 'left cloud', path: 'M 55 115 Q 45 85 80 80 Q 90 45 125 65 Q 150 45 170 80 Q 205 80 200 115 Z', labelX: 125, labelY: 98, addends: [2, 1] },
   { id: 'cloud-right', name: 'right cloud', path: 'M 260 100 Q 250 70 285 65 Q 295 30 330 50 Q 355 30 375 65 Q 410 65 405 100 Z', labelX: 330, labelY: 83, addends: [3, 0] },
@@ -62,6 +74,7 @@ const garden: PictureRegion[] = [
 ]
 
 const rocket: PictureRegion[] = [
+  ...skyRegions([[210, 40], [570, 40], [160, 450], [625, 275]]),
   { id: 'star-left', name: 'left star', path: 'M 100 48 L 112 77 L 143 80 L 119 100 L 126 130 L 100 113 L 74 130 L 81 100 L 57 80 L 88 77 Z', labelX: 100, labelY: 93, addends: [4, 5] },
   { id: 'star-right', name: 'right star', path: 'M 675 55 L 687 84 L 718 87 L 694 107 L 701 137 L 675 120 L 649 137 L 656 107 L 632 87 L 663 84 Z', labelX: 675, labelY: 100, addends: [7, 2] },
   { id: 'nose-left', name: 'left rocket nose', path: 'M 280 165 Q 300 90 400 35 V 165 Z', labelX: 350, labelY: 133, addends: [3, 2] },
