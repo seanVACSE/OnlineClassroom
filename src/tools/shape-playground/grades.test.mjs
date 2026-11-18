@@ -11,6 +11,7 @@ test('each grade has the shared games, with first-grade math and upper-grade nam
     for (const activity of ['count', 'patterns', 'sort']) assert.ok(isGradeActivity(grade, activity))
     assert.equal(isGradeActivity(grade, 'mystery-picture'), grade === '1')
     assert.equal(isGradeActivity(grade, 'number-picture'), grade === 'k')
+    assert.equal(isGradeActivity(grade, 'shape-templates'), grade === 'k')
     assert.equal(isGradeActivity(grade, 'nametag'), grade === '2' || grade === '3')
     assert.equal(isGradeActivity(grade, 'unknown'), false)
   }

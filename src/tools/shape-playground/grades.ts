@@ -1,6 +1,6 @@
 export const gradeIds = ['k', '1', '2', '3'] as const
 export type Grade = typeof gradeIds[number]
-export type GradeActivity = 'count' | 'patterns' | 'sort' | 'mystery-picture' | 'number-picture' | 'nametag'
+export type GradeActivity = 'count' | 'patterns' | 'sort' | 'mystery-picture' | 'number-picture' | 'shape-templates' | 'nametag'
 
 export const gradeLabels: Record<Grade, string> = {
   k: 'Kindergarten',
@@ -10,7 +10,7 @@ export const gradeLabels: Record<Grade, string> = {
 }
 
 export const gradeActivities: Record<Grade, readonly GradeActivity[]> = {
-  k: ['count', 'patterns', 'sort', 'number-picture'],
+  k: ['count', 'patterns', 'sort', 'number-picture', 'shape-templates'],
   '1': ['count', 'patterns', 'sort', 'mystery-picture'],
   '2': ['count', 'patterns', 'sort', 'nametag'],
   '3': ['count', 'patterns', 'sort', 'nametag'],
