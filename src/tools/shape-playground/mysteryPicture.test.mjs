@@ -3,8 +3,9 @@ import { test } from 'node:test'
 import { answerColors, mysteryPuzzles } from './mysteryPictureData.ts'
 
 test('every picture section has an addition fact within 0–9 and a color for its answer', () => {
-  assert.equal(mysteryPuzzles.length, 3)
-  assert.deepEqual(mysteryPuzzles.map((puzzle) => puzzle.difficulty), ['Easy', 'Medium', 'Medium'])
+  assert.equal(mysteryPuzzles.length, 5)
+  assert.deepEqual(mysteryPuzzles.map((puzzle) => puzzle.difficulty), ['Easy', 'Medium', 'Medium', 'Medium', 'Medium'])
+  assert.deepEqual(mysteryPuzzles.map((puzzle) => puzzle.id), ['house', 'garden', 'rocket', 'penguins', 'turtle'])
   assert.equal(new Set(mysteryPuzzles.map((puzzle) => puzzle.id)).size, mysteryPuzzles.length)
   for (const puzzle of mysteryPuzzles) {
     assert.ok(puzzle.regions.length >= (puzzle.difficulty === 'Easy' ? 17 : 24))

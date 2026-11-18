@@ -167,7 +167,7 @@ export function ShapeGradeSelect() {
               </Link>
               {gradeActivities[grade].includes('mystery-picture') && <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/mystery-picture`}>
                 <CardImage name="math-mystery-picture"><Palette size={54} aria-hidden="true" /></CardImage>
-                <strong>4. Math Mystery Picture</strong><span>First grade addition</span>
+                <strong>4. Math Mystery Picture: Addition</strong><span>First grade addition</span>
               </Link>}
               {gradeActivities[grade].includes('nametag') && <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/nametag`}>
                 <CardImage name="create-a-nametag"><Tags size={54} aria-hidden="true" /></CardImage><strong>Create a Nametag</strong><span>Make a nametag with shapes and text</span>

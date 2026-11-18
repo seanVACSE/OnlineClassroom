@@ -171,6 +171,7 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
                 </g>
               )
             })}
+            {puzzle.details?.map((path, index) => <path key={index} d={path} fill="#263d34" pointerEvents="none" aria-hidden="true" />)}
           </svg>
         </div>
         <div className="mystery-legend" role="group" aria-label="Choose a color">
