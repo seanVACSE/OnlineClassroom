@@ -1,5 +1,7 @@
 .tracing-page {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
   background: #e7eee5;
 }
 
@@ -32,8 +34,8 @@
 }
 
 .tracing-content {
-  min-height: calc(100vh - 230px);
-  padding: 52px 28px;
+  flex: 1;
+  padding: 42px 28px;
   background-color: #e7eee5;
   background-position: center;
   background-size: cover;
@@ -46,7 +48,7 @@
 
 .tracing-assignment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 210px));
   justify-content: center;
   gap: 28px;
 }
@@ -409,11 +411,11 @@
   }
 
   .tracing-content {
-    min-height: calc(100vh - 185px);
     padding: 32px 24px;
   }
 
   .tracing-assignment-grid {
-    grid-template-columns: minmax(0, 220px);
+    grid-template-columns: repeat(2, minmax(0, 210px));
+    gap: 18px;
   }
 }

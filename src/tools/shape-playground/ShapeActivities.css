@@ -4,6 +4,7 @@
   color: #293d36;
 }
 
+.activity-page { background-color: #315449; background-position: center; background-size: cover; }
 .activity-page button, .activity-game button { font: inherit; cursor: pointer; }
 .activity-page a:focus-visible, .activity-game a:focus-visible, .activity-game button:focus-visible { outline: 3px solid #d57b57; outline-offset: 3px; }
 .activity-header, .activity-game-header {
@@ -18,18 +19,18 @@
 .activity-header h1, .activity-game-title { margin: 0; font-family: var(--display); font-size: 24px; font-weight: 600; }
 .activity-back { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 12px; border: 1px solid #dce5dc; border-radius: 8px; color: #49675b; font-size: 14px; text-decoration: none; background: #fffefa; }
 .activity-back:hover { background: #f0f7ef; }
-.activity-select { max-width: 1040px; margin: auto; padding: 48px 24px; text-align: center; }
-.activity-select h2 { margin: 0 0 30px; font-family: var(--display); font-size: 32px; font-weight: 600; }
-.activity-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+.activity-select { max-width: 1200px; margin: auto; padding: 28px 20px; text-align: center; }
+.activity-select h2 { margin: 0 0 20px; color: #fff; font-family: var(--display); font-size: 27px; font-weight: 600; text-shadow: 0 2px 4px #203b30; }
+.activity-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 210px)); justify-content: center; gap: 20px; }
 .activity-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: 230px;
-  min-height: 220px;
-  padding: 24px;
+  gap: 10px;
+  width: 100%;
+  min-height: 205px;
+  padding: 18px;
   border: 3px solid #fff;
   border-radius: 20px;
   color: #334e43;
@@ -38,14 +39,14 @@
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 .activity-card:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #344c3630; }
-.activity-card strong { font-family: var(--display); font-size: 22px; }
+.activity-card strong { font-family: var(--display); font-size: 20px; line-height: 1.2; }
 .activity-card > span:last-child { font-size: 14px; }
 .activity-card--yellow { background: #f8dc80; }
 .activity-card--green { background: #cce8cd; }
 .activity-card--blue { background: #cfe7f3; }
-.activity-card-image { display: block; width: 100px; height: 100px; border-radius: 12px; object-fit: contain; }
-.activity-card-shapes { display: flex; align-items: center; gap: 12px; }
-.activity-card-shapes .activity-picture { width: 48px; height: 48px; }
+.activity-card-image { display: block; width: 80px; height: 80px; border-radius: 10px; object-fit: contain; }
+.activity-card-shapes { display: flex; align-items: center; gap: 8px; }
+.activity-card-shapes .activity-picture { width: 44px; height: 44px; }
 .activity-empty { color: #687e74; font-size: 18px; }
 
 .activity-game { display: flex; flex-direction: column; height: 100dvh; overflow: auto; overscroll-behavior: none; }
@@ -132,8 +133,9 @@
   .activity-header, .activity-game-header { gap: 10px; min-height: 70px; padding: 10px 12px; }
   .activity-header h1, .activity-game-title { font-size: 19px; }
   .activity-back span { display: none; }
-  .activity-select { padding: 28px 16px; }
-  .activity-card { width: min(100%, 260px); min-height: 170px; }
+  .activity-select { padding: 24px 12px; }
+  .activity-cards { grid-template-columns: repeat(2, minmax(0, 210px)); gap: 12px; }
+  .activity-card { min-height: 180px; padding: 12px; }
   .activity-round { padding: 12px; }
   .activity-picture { width: 48px; height: 48px; }
   .activity-sort-piece { width: 58px; height: 58px; }

@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom'
 import { answerColors, mysteryPuzzles, type PictureRegion } from './mysteryPictureData'
 import './MysteryPicture.css'
 
-const back = '/tools/shape-playground/grades/k-1'
-
 function QuestionDialog({ region, onClose, onCorrect }: { region: PictureRegion; onClose: () => void; onCorrect: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [wrong, setWrong] = useState(false)
@@ -43,7 +41,7 @@ function QuestionDialog({ region, onClose, onCorrect }: { region: PictureRegion;
   )
 }
 
-export function MysteryPicture() {
+export function MysteryPicture({ back, backLabel }: { back: string; backLabel: string }) {
   const [puzzleIndex, setPuzzleIndex] = useState(0)
   const [unlockedIndex, setUnlockedIndex] = useState(0)
   const [solvedByPuzzle, setSolvedByPuzzle] = useState<Record<string, string[]>>({})
@@ -91,7 +89,7 @@ export function MysteryPicture() {
   return (
     <main className="activity-game mystery-game" ref={gameRef}>
       <div className="activity-game-header">
-        <Link className="activity-back" to={back} aria-label="Back to grades K–1 activities"><ArrowLeft size={22} /><span>Back</span></Link>
+        <Link className="activity-back" to={back} aria-label={backLabel}><ArrowLeft size={22} /><span>Back</span></Link>
         <span className="activity-game-title">Math Mystery Picture</span>
         <button className="activity-fullscreen" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}</button>
       </div>

@@ -70,7 +70,6 @@ function App() {
       <Route path="/tools/shape-playground" element={<ShapeActivitySelect />} />
       <Route path="/tools/shape-playground/free" element={<ShapePlayground />} />
       <Route path="/tools/shape-playground/grades/:grade" element={<ShapeGradeSelect />} />
-      <Route path="/tools/shape-playground/grades/2-3/nametag" element={<ShapePlayground mode="nametag" />} />
       <Route path="/tools/shape-playground/grades/:grade/:activity" element={<ShapeGame />} />
       <Route path="/tools/:toolId" element={<ToolPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />

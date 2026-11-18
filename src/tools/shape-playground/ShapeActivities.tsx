@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
-import { ArrowLeft, ArrowRight, Check, Circle, LayoutGrid, Maximize, Minimize, Paintbrush, Palette, Shapes, Sparkles, Square, Star, Tags, Triangle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Circle, Maximize, Minimize, Paintbrush, Palette, Shapes, Sparkles, Square, Star, Tags, Triangle } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { countingQuestions, patternQuestions, sortingQuestions, type ActivityColor, type ActivityShape, type SortingQuestion } from './activityQuestions'
 import { MysteryPicture } from './MysteryPicture'
+import { ShapePlayground } from './ShapePlayground'
+import { gradeActivities, gradeIds, gradeLabels, isGrade, isGradeActivity, type Grade } from './grades'
 import './ShapeActivities.css'
 
 const root = '/tools/shape-playground'
+const selectionBackground = `${import.meta.env.BASE_URL}images/home/background.png`
 const shapeIcons = { circle: Circle, square: Square, triangle: Triangle, star: Star }
 const cardImages = import.meta.glob<string>('/src/assets/shape-playground/cards/*.png', { eager: true, import: 'default' })
 
@@ -121,7 +124,7 @@ function ActivityHeader({ back, title, backLabel }: { back: string; title: strin
 
 export function ShapeActivitySelect() {
   return (
-    <main className="activity-page">
+    <main className="activity-page" style={{ backgroundImage: `url("${selectionBackground}")` }}>
       <ActivityHeader back="/" title="Shape Playground" backLabel="Back to classroom" />
       <section className="activity-select">
         <h2>Choose an activity</h2>
@@ -129,12 +132,12 @@ export function ShapeActivitySelect() {
           <Link className="activity-card activity-card--yellow" to={`${root}/free`}>
             <CardImage name="free-design"><Paintbrush size={54} aria-hidden="true" /></CardImage><strong>Free Design</strong><span>Make your own picture</span>
           </Link>
-          <Link className="activity-card activity-card--green" to={`${root}/grades/k-1`}>
-            <CardImage name="grades-k-1"><Shapes size={54} aria-hidden="true" /></CardImage><strong>Grades K–1</strong><span>Play with shapes</span>
-          </Link>
-          <Link className="activity-card activity-card--blue" to={`${root}/grades/2-3`}>
-            <CardImage name="grades-2-3"><LayoutGrid size={54} aria-hidden="true" /></CardImage><strong>Grades 2–3</strong><span>Shape activities</span>
-          </Link>
+          {gradeIds.map((grade) => (
+            <Link key={grade} className={`activity-card activity-card--${grade === 'k' || grade === '2' ? 'green' : 'blue'}`} to={`${root}/grades/${grade}`}>
+              <CardImage name={grade === 'k' || grade === '1' ? 'grades-k-1' : 'grades-2-3'}><Shapes size={54} aria-hidden="true" /></CardImage>
+              <strong>{gradeLabels[grade]}</strong><span>Shape activities</span>
+            </Link>
+          ))}
         </div>
       </section>
     </main>
@@ -143,43 +146,33 @@ export function ShapeActivitySelect() {
 
 export function ShapeGradeSelect() {
   const { grade } = useParams()
-  if (grade !== 'k-1' && grade !== '2-3') return <Navigate to={root} replace />
+  if (!isGrade(grade)) return <Navigate to={root} replace />
   return (
-    <main className="activity-page">
-      <ActivityHeader back={root} title={`Grades ${grade === 'k-1' ? 'K–1' : '2–3'}`} backLabel="Back to shape activities" />
+    <main className="activity-page" style={{ backgroundImage: `url("${selectionBackground}")` }}>
+      <ActivityHeader back={root} title={gradeLabels[grade]} backLabel="Back to shape activities" />
       <section className="activity-select">
-        {grade === 'k-1' ? (
-          <>
-            <h2>Pick a game</h2>
+            <h2>Pick an activity</h2>
             <div className="activity-cards">
-              <Link className="activity-card activity-card--yellow" to={`${root}/grades/k-1/count`}>
+              <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/count`}>
                 <CardImage name="count-the-shapes"><span className="activity-card-shapes"><Picture shape="circle" /><Picture shape="triangle" /></span></CardImage>
                 <strong>1. Count the Shapes</strong><span>10 questions</span>
               </Link>
-              <Link className="activity-card activity-card--blue" to={`${root}/grades/k-1/patterns`}>
+              <Link className="activity-card activity-card--blue" to={`${root}/grades/${grade}/patterns`}>
                 <CardImage name="shape-patterns"><span className="activity-card-shapes"><Picture shape="square" /><Picture shape="star" /></span></CardImage>
                 <strong>2. Shape Patterns</strong><span>10 questions</span>
               </Link>
-              <Link className="activity-card activity-card--green" to={`${root}/grades/k-1/sort`}>
+              <Link className="activity-card activity-card--green" to={`${root}/grades/${grade}/sort`}>
                 <CardImage name="sort-the-shapes"><span className="activity-card-shapes"><Picture shape="circle" color="yellow" /><Picture shape="square" color="yellow" /></span></CardImage>
                 <strong>3. Shape Sort</strong><span>6 sorting rounds</span>
               </Link>
-              <Link className="activity-card activity-card--yellow" to={`${root}/grades/k-1/mystery-picture`}>
+              {gradeActivities[grade].includes('mystery-picture') && <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/mystery-picture`}>
                 <CardImage name="math-mystery-picture"><Palette size={54} aria-hidden="true" /></CardImage>
                 <strong>4. Math Mystery Picture</strong><span>First grade addition</span>
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <h2>Pick an activity</h2>
-            <div className="activity-cards">
-              <Link className="activity-card activity-card--yellow" to={`${root}/grades/2-3/nametag`}>
+              </Link>}
+              {gradeActivities[grade].includes('nametag') && <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/nametag`}>
                 <CardImage name="create-a-nametag"><Tags size={54} aria-hidden="true" /></CardImage><strong>Create a Nametag</strong><span>Make a nametag with shapes and text</span>
-              </Link>
+              </Link>}
             </div>
-          </>
-        )}
       </section>
     </main>
   )
@@ -187,12 +180,16 @@ export function ShapeGradeSelect() {
 
 export function ShapeGame() {
   const { grade, activity } = useParams()
-  if (grade === 'k-1' && activity === 'mystery-picture') return <MysteryPicture />
-  if (grade !== 'k-1' || (activity !== 'count' && activity !== 'patterns' && activity !== 'sort')) return <Navigate to={root} replace />
-  return <Game key={activity} activity={activity} />
+  if (grade === 'k-1' && (activity === 'count' || activity === 'patterns' || activity === 'sort' || activity === 'mystery-picture')) return <Navigate to={`${root}/grades/1/${activity}`} replace />
+  if (grade === '2-3' && activity === 'nametag') return <Navigate to={`${root}/grades/2/nametag`} replace />
+  if (!isGrade(grade)) return <Navigate to={root} replace />
+  if (!isGradeActivity(grade, activity)) return <Navigate to={`${root}/grades/${grade}`} replace />
+  if (activity === 'mystery-picture') return <MysteryPicture key={grade} back={`${root}/grades/${grade}`} backLabel={`Back to ${gradeLabels[grade]} activities`} />
+  if (activity === 'nametag') return <ShapePlayground mode="nametag" back={`${root}/grades/${grade}`} />
+  return <Game key={`${grade}-${activity}`} activity={activity} grade={grade} />
 }
 
-function Game({ activity }: { activity: 'count' | 'patterns' | 'sort' }) {
+function Game({ activity, grade }: { activity: 'count' | 'patterns' | 'sort'; grade: Grade }) {
   const [index, setIndex] = useState(0)
   const [result, setResult] = useState<'wrong' | 'correct' | null>(null)
   const [finished, setFinished] = useState(false)
@@ -233,7 +230,7 @@ function Game({ activity }: { activity: 'count' | 'patterns' | 'sort' }) {
   return (
     <main className="activity-game" ref={gameRef}>
       <div className="activity-game-header">
-        <Link className="activity-back" to={`${root}/grades/k-1`} aria-label="Back to grades K–1 activities"><ArrowLeft size={22} /><span>Back</span></Link>
+        <Link className="activity-back" to={`${root}/grades/${grade}`} aria-label={`Back to ${gradeLabels[grade]} activities`}><ArrowLeft size={22} /><span>Back</span></Link>
         <span className="activity-game-title">{activity === 'count' ? 'Count the Shapes' : activity === 'sort' ? 'Shape Sort' : 'Shape Patterns'}</span>
         <button className="activity-fullscreen" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}</button>
       </div>
@@ -245,7 +242,7 @@ function Game({ activity }: { activity: 'count' | 'patterns' | 'sort' }) {
           <p>You finished all {total} {unit}s!</p>
           <div className="activity-finish-actions">
             <button onClick={() => { setIndex(0); setFinished(false); setResult(null) }}>Play again</button>
-            <Link to={`${root}/grades/k-1`}>More games</Link>
+            <Link to={`${root}/grades/${grade}`}>More games</Link>
           </div>
         </section>
       ) : (

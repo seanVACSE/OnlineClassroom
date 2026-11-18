@@ -65,7 +65,7 @@ function BackgroundImage({ url }: { url?: string }) {
   return <KonvaImage image={image} x={(BOARD_WIDTH - width) / 2} y={(BOARD_HEIGHT - height) / 2} width={width} height={height} listening={false} />
 }
 
-export function ShapePlayground({ mode = 'free' }: { mode?: 'free' | 'nametag' }) {
+export function ShapePlayground({ mode = 'free', back = '/tools/shape-playground' }: { mode?: 'free' | 'nametag'; back?: string }) {
   const storageKey = mode === 'nametag' ? NAMETAG_STORAGE_KEY : STORAGE_KEY
   const [backgroundId, setBackgroundId] = useState('blank')
   const [boards, setBoards] = useState<SavedBoards>(() => loadBoards(storageKey))
@@ -219,7 +219,7 @@ export function ShapePlayground({ mode = 'free' }: { mode?: 'free' | 'nametag' }
   return (
     <main className="playground" ref={playgroundRef}>
       <header className="playground-header">
-        <Link className="playground-back" to={mode === 'nametag' ? '/tools/shape-playground/grades/2-3' : '/tools/shape-playground'} aria-label="Back to shape activities" title="Back to shape activities"><ArrowLeft size={20} /></Link>
+        <Link className="playground-back" to={back} aria-label="Back to shape activities" title="Back to shape activities"><ArrowLeft size={20} /></Link>
         <div className="playground-heading"><span className="playground-heading-icon"><Shapes size={23} /></span><div><span className="playground-eyebrow">CLASSROOM TOOLS</span><h1>{mode === 'nametag' ? 'Create a Nametag' : 'Shape Playground'}</h1></div></div>
         <div className="playground-header-actions">
           <button className="playground-fullscreen" onClick={() => void toggleFullscreen()} title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}<span>{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}</span></button>
