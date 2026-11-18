@@ -17,7 +17,7 @@ export function solveRegion(progress: PictureProgress, region: PictureRegion): P
   return { ...progress, solved: [...progress.solved, region.id] }
 }
 
-export function colorRegion(progress: PictureProgress, region: PictureRegion, colorAnswer: number | null): PictureProgress {
-  if (!progress.solved.includes(region.id) || progress.colored.includes(region.id) || colorAnswer !== region.addends[0] + region.addends[1]) return progress
+export function colorRegion(progress: PictureProgress, region: PictureRegion, colorAnswer: number | null, target = region.addends[0] + region.addends[1], requireSolved = true): PictureProgress {
+  if ((requireSolved && !progress.solved.includes(region.id)) || progress.colored.includes(region.id) || colorAnswer !== target) return progress
   return { ...progress, colored: [...progress.colored, region.id] }
 }

@@ -27,3 +27,10 @@ test('only a solved section can be colored, and only with its matching color', (
   assert.deepEqual(colored, { solved: [region.id], colored: [region.id] })
   assert.deepEqual(colorRegion(colored, region, 3), colored)
 })
+
+test('number matching colors without solving, but still rejects the wrong color', () => {
+  const region = mysteryPuzzles[0].regions.find((item) => item.id === 'window-left')
+  const empty = { solved: [], colored: [] }
+  assert.deepEqual(colorRegion(empty, region, 3, 0, false), empty)
+  assert.deepEqual(colorRegion(empty, region, 0, 0, false), { solved: [], colored: [region.id] })
+})

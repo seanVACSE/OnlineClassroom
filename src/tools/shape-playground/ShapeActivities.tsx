@@ -169,6 +169,10 @@ export function ShapeGradeSelect() {
                 <CardImage name="math-mystery-picture"><Palette size={54} aria-hidden="true" /></CardImage>
                 <strong>4. Math Mystery Picture: Addition</strong><span>First grade addition</span>
               </Link>}
+              {gradeActivities[grade].includes('number-picture') && <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/number-picture`}>
+                <CardImage name="math-mystery-picture"><Palette size={54} aria-hidden="true" /></CardImage>
+                <strong>4. Color by Number</strong><span>Match numbers and colors</span>
+              </Link>}
               {gradeActivities[grade].includes('nametag') && <Link className="activity-card activity-card--yellow" to={`${root}/grades/${grade}/nametag`}>
                 <CardImage name="create-a-nametag"><Tags size={54} aria-hidden="true" /></CardImage><strong>Create a Nametag</strong><span>Make a nametag with shapes and text</span>
               </Link>}
@@ -185,6 +189,7 @@ export function ShapeGame() {
   if (!isGrade(grade)) return <Navigate to={root} replace />
   if (!isGradeActivity(grade, activity)) return <Navigate to={`${root}/grades/${grade}`} replace />
   if (activity === 'mystery-picture') return <MysteryPicture key={grade} back={`${root}/grades/${grade}`} backLabel={`Back to ${gradeLabels[grade]} activities`} />
+  if (activity === 'number-picture') return <MysteryPicture key={grade} mode="numbers" back={`${root}/grades/${grade}`} backLabel={`Back to ${gradeLabels[grade]} activities`} />
   if (activity === 'nametag') return <ShapePlayground mode="nametag" back={`${root}/grades/${grade}`} />
   return <Game key={`${grade}-${activity}`} activity={activity} grade={grade} />
 }

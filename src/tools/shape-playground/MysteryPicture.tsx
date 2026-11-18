@@ -3,6 +3,7 @@ import { ArrowLeft, Maximize, Minimize, Palette, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { answerColors, mysteryPuzzles, type PictureRegion } from './mysteryPictureData'
 import { checkAnswer, colorRegion, retryDelayMs, solveRegion, type PictureProgress } from './mysteryGame'
+import { kindergartenColors, kindergartenNumber } from './kindergartenPicture'
 import './MysteryPicture.css'
 
 function QuestionDialog({ region, onClose, onAnswer, waiting }: { region: PictureRegion; onClose: () => void; onAnswer: (value: number) => void; waiting: boolean }) {
@@ -36,7 +37,7 @@ function QuestionDialog({ region, onClose, onAnswer, waiting }: { region: Pictur
   )
 }
 
-export function MysteryPicture({ back, backLabel }: { back: string; backLabel: string }) {
+export function MysteryPicture({ back, backLabel, mode = 'addition' }: { back: string; backLabel: string; mode?: 'addition' | 'numbers' }) {
   const [puzzleIndex, setPuzzleIndex] = useState(0)
   const [unlockedIndex, setUnlockedIndex] = useState(0)
   const [progressByPuzzle, setProgressByPuzzle] = useState<Record<string, PictureProgress>>({})
@@ -50,6 +51,9 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
   const gameRef = useRef<HTMLElement>(null)
   const regionRefs = useRef<Record<string, SVGGElement | null>>({})
   const puzzle = mysteryPuzzles[puzzleIndex]
+  const isNumbers = mode === 'numbers'
+  const colors = isNumbers ? kindergartenColors : answerColors
+  const title = isNumbers ? 'Color by Number' : 'Math Mystery Picture: Addition'
   const progress = progressByPuzzle[puzzle.id] ?? { solved: [], colored: [] }
 
   useEffect(() => {
@@ -100,7 +104,7 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
 
   function selectRegion(region: PictureRegion) {
     if (progress.colored.includes(region.id)) return
-    if (!progress.solved.includes(region.id)) {
+    if (!isNumbers && !progress.solved.includes(region.id)) {
       setFeedback('')
       setSelected(region)
       return
@@ -109,11 +113,12 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
       setFeedback('Choose a color first, then tap the matching number.')
       return
     }
-    if (selectedColor !== region.addends[0] + region.addends[1]) {
+    const target = isNumbers ? kindergartenNumber(puzzle.id, region) : region.addends[0] + region.addends[1]
+    if (selectedColor !== target) {
       setFeedback('That color does not match this number. Try another color!')
       return
     }
-    setProgressByPuzzle((previous) => ({ ...previous, [puzzle.id]: colorRegion(previous[puzzle.id] ?? { solved: [], colored: [] }, region, selectedColor) }))
+    setProgressByPuzzle((previous) => ({ ...previous, [puzzle.id]: colorRegion(previous[puzzle.id] ?? { solved: [], colored: [] }, region, selectedColor, target, !isNumbers) }))
     setFeedback('Nice coloring!')
     if (progress.colored.length + 1 === puzzle.regions.length) {
       setUnlockedIndex((previous) => Math.max(previous, Math.min(puzzleIndex + 1, mysteryPuzzles.length - 1)))
@@ -127,28 +132,28 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
   }
 
   const finished = progress.colored.length === puzzle.regions.length
-  const availableColors = new Set(puzzle.regions.map((region) => region.addends[0] + region.addends[1]))
+  const availableColors = new Set(puzzle.regions.map((region) => isNumbers ? kindergartenNumber(puzzle.id, region) : region.addends[0] + region.addends[1]))
   return (
     <main className="activity-game mystery-game" ref={gameRef}>
       <div className="activity-game-header">
         <Link className="activity-back" to={back} aria-label={backLabel}><ArrowLeft size={22} /><span>Back</span></Link>
-        <span className="activity-game-title">Math Mystery Picture: Addition</span>
+        <span className="activity-game-title">{title}</span>
         <button className="activity-fullscreen" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}</button>
       </div>
       {fullscreenError && <p className="activity-fullscreen-error" role="status">Fullscreen is unavailable in this browser.</p>}
       <section className="mystery-content">
-        <h1>Math Mystery Picture: Addition <Palette size={26} aria-hidden="true" /></h1>
-        <p>Picture {puzzleIndex + 1} of {mysteryPuzzles.length} · {puzzle.difficulty} — Solve a problem, then choose its color and tap the number!</p>
+        <h1>{title} <Palette size={26} aria-hidden="true" /></h1>
+        <p>Picture {puzzleIndex + 1} of {mysteryPuzzles.length} · {puzzle.difficulty} — {isNumbers ? 'Choose a color, then tap the matching number!' : 'Solve a problem, then choose its color and tap the number!'}</p>
         <div className="activity-progress" aria-label={`${progress.colored.length} of ${puzzle.regions.length} parts colored`}>
           <span>{progress.colored.length} / {puzzle.regions.length}</span>
           <div className="activity-progress-track"><div style={{ width: `${progress.colored.length / puzzle.regions.length * 100}%` }} /></div>
         </div>
         <div className="mystery-board">
-          <svg viewBox="0 0 800 520" role="group" aria-label="Mystery picture. Solve problems and color the matching numbers." className="mystery-picture">
+          <svg viewBox="0 0 800 520" role="group" aria-label={isNumbers ? 'Picture. Choose a color and match the numbers.' : 'Mystery picture. Solve problems and color the matching numbers.'} className="mystery-picture">
             {puzzle.regions.map((region) => {
-              const isSolved = progress.solved.includes(region.id)
+              const isSolved = isNumbers || progress.solved.includes(region.id)
               const isColored = progress.colored.includes(region.id)
-              const sum = region.addends[0] + region.addends[1]
+              const sum = isNumbers ? kindergartenNumber(puzzle.id, region) : region.addends[0] + region.addends[1]
               return (
                 <g
                   key={region.id}
@@ -157,7 +162,7 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
                   role="button"
                   tabIndex={0}
                   aria-disabled={isColored}
-                  aria-label={isColored ? `${region.name}, colored ${answerColors[sum].name}` : isSolved ? `${region.name}, answer ${sum}, ready to color` : `${region.name}: ${region.addends[0]} plus ${region.addends[1]}, not yet solved`}
+                  aria-label={isColored ? `${region.name}, colored ${colors[sum].name}` : isSolved ? `${region.name}, ${isNumbers ? 'number' : 'answer'} ${sum}, ready to color` : `${region.name}: ${region.addends[0]} plus ${region.addends[1]}, not yet solved`}
                   onClick={() => selectRegion(region)}
                   onKeyDown={(event) => {
                     if (!isColored && (event.key === 'Enter' || event.key === ' ')) {
@@ -166,7 +171,7 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
                     }
                   }}
                 >
-                  <path d={region.path} fill={isColored ? answerColors[sum].fill : '#fffefa'} fillRule="evenodd" />
+                  <path d={region.path} fill={isColored ? colors[sum].fill : '#fffefa'} fillRule="evenodd" />
                   {!isColored && <text x={region.labelX} y={region.labelY} textAnchor="middle" dominantBaseline="central">{isSolved ? sum : `${region.addends[0]}+${region.addends[1]}`}</text>}
                 </g>
               )
@@ -175,7 +180,7 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
           </svg>
         </div>
         <div className="mystery-legend" role="group" aria-label="Choose a color">
-          {Object.entries(answerColors).filter(([answer]) => availableColors.has(Number(answer))).map(([answer, color]) => <button key={answer} aria-pressed={selectedColor === Number(answer)} onClick={() => { setSelectedColor(Number(answer)); setFeedback(`${color.name} selected. Tap a ${answer} to color it.`) }}><i style={{ backgroundColor: color.fill }} aria-hidden="true" />{answer} = {color.name}</button>)}
+          {Object.entries(colors).filter(([answer]) => availableColors.has(Number(answer))).map(([answer, color]) => <button key={answer} aria-pressed={selectedColor === Number(answer)} onClick={() => { setSelectedColor(Number(answer)); setFeedback(`${color.name} selected. Tap a ${answer} to color it.`) }}><i style={{ backgroundColor: color.fill }} aria-hidden="true" />{answer} = {color.name}</button>)}
         </div>
         <div className="mystery-color-feedback" role="status">{feedback}</div>
         <div className="mystery-finish" aria-live="polite">
