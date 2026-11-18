@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { ArrowLeft, Maximize, Minimize, Palette, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { answerColors, mysteryPuzzles, type PictureRegion } from './mysteryPictureData'
+import { checkAnswer, colorRegion, retryDelayMs, solveRegion, type PictureProgress } from './mysteryGame'
 import './MysteryPicture.css'
 
-function QuestionDialog({ region, onClose, onCorrect }: { region: PictureRegion; onClose: () => void; onCorrect: () => void }) {
+function QuestionDialog({ region, onClose, onAnswer, waiting }: { region: PictureRegion; onClose: () => void; onAnswer: (value: number) => void; waiting: boolean }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const [wrong, setWrong] = useState(false)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -14,15 +14,10 @@ function QuestionDialog({ region, onClose, onCorrect }: { region: PictureRegion;
     return () => { if (dialog?.open) dialog.close() }
   }, [])
 
-  function answer(value: number) {
-    if (value === region.addends[0] + region.addends[1]) onCorrect()
-    else setWrong(true)
-  }
-
   function handleKey(event: KeyboardEvent<HTMLDialogElement>) {
     if (/^[0-9]$/.test(event.key) && !event.altKey && !event.ctrlKey && !event.metaKey) {
       event.preventDefault()
-      answer(Number(event.key))
+      onAnswer(Number(event.key))
     }
   }
 
@@ -32,10 +27,10 @@ function QuestionDialog({ region, onClose, onCorrect }: { region: PictureRegion;
       <p>Choose your answer:</p>
       <div className="mystery-number-pad">
         {Array.from({ length: 10 }, (_, number) => (
-          <button key={number} onClick={() => answer(number)}>{number}</button>
+          <button key={number} disabled={waiting} onClick={() => onAnswer(number)}>{number}</button>
         ))}
       </div>
-      <p className="mystery-dialog-feedback" role="status">{wrong ? 'Try again!' : '\u00a0'}</p>
+      <p className="mystery-dialog-feedback" role="status">{waiting ? 'Take a moment to think. Please wait before trying again.' : 'Choose the sum.'}</p>
       <button className="mystery-cancel" onClick={onClose}>Back to picture</button>
     </dialog>
   )
@@ -44,14 +39,27 @@ function QuestionDialog({ region, onClose, onCorrect }: { region: PictureRegion;
 export function MysteryPicture({ back, backLabel }: { back: string; backLabel: string }) {
   const [puzzleIndex, setPuzzleIndex] = useState(0)
   const [unlockedIndex, setUnlockedIndex] = useState(0)
-  const [solvedByPuzzle, setSolvedByPuzzle] = useState<Record<string, string[]>>({})
+  const [progressByPuzzle, setProgressByPuzzle] = useState<Record<string, PictureProgress>>({})
   const [selected, setSelected] = useState<PictureRegion | null>(null)
+  const [selectedColor, setSelectedColor] = useState<number | null>(null)
+  const [feedback, setFeedback] = useState('')
+  const [retryAt, setRetryAt] = useState(0)
+  const retryAtRef = useRef(0)
   const [fullscreen, setFullscreen] = useState(false)
   const [fullscreenError, setFullscreenError] = useState(false)
   const gameRef = useRef<HTMLElement>(null)
   const regionRefs = useRef<Record<string, SVGGElement | null>>({})
   const puzzle = mysteryPuzzles[puzzleIndex]
-  const solved = solvedByPuzzle[puzzle.id] ?? []
+  const progress = progressByPuzzle[puzzle.id] ?? { solved: [], colored: [] }
+
+  useEffect(() => {
+    if (!retryAt) return
+    const timer = window.setTimeout(() => {
+      retryAtRef.current = 0
+      setRetryAt(0)
+    }, Math.max(0, retryAt - Date.now()))
+    return () => window.clearTimeout(timer)
+  }, [retryAt])
 
   useEffect(() => {
     const update = () => setFullscreen(document.fullscreenElement === gameRef.current)
@@ -75,74 +83,110 @@ export function MysteryPicture({ back, backLabel }: { back: string; backLabel: s
     if (id) requestAnimationFrame(() => regionRefs.current[id]?.focus())
   }
 
-  function solve() {
+  function answer(value: number) {
     if (!selected) return
-    setSolvedByPuzzle((previous) => ({ ...previous, [puzzle.id]: [...(previous[puzzle.id] ?? []), selected.id] }))
-    if (solved.length + 1 === puzzle.regions.length) {
-      setUnlockedIndex((previous) => Math.max(previous, Math.min(puzzleIndex + 1, mysteryPuzzles.length - 1)))
+    const result = checkAnswer(selected, value, retryAtRef.current, Date.now())
+    if (result === 'wait') return
+    if (result === 'wrong') {
+      const deadline = Date.now() + retryDelayMs
+      retryAtRef.current = deadline
+      setRetryAt(deadline)
+      return
     }
+    setProgressByPuzzle((previous) => ({ ...previous, [puzzle.id]: solveRegion(previous[puzzle.id] ?? { solved: [], colored: [] }, selected) }))
+    setFeedback('Correct! Choose the matching color, then tap the number.')
     closeQuestion()
   }
 
-  const finished = solved.length === puzzle.regions.length
+  function selectRegion(region: PictureRegion) {
+    if (progress.colored.includes(region.id)) return
+    if (!progress.solved.includes(region.id)) {
+      setFeedback('')
+      setSelected(region)
+      return
+    }
+    if (selectedColor === null) {
+      setFeedback('Choose a color first, then tap the matching number.')
+      return
+    }
+    if (selectedColor !== region.addends[0] + region.addends[1]) {
+      setFeedback('That color does not match this number. Try another color!')
+      return
+    }
+    setProgressByPuzzle((previous) => ({ ...previous, [puzzle.id]: colorRegion(previous[puzzle.id] ?? { solved: [], colored: [] }, region, selectedColor) }))
+    setFeedback('Nice coloring!')
+    if (progress.colored.length + 1 === puzzle.regions.length) {
+      setUnlockedIndex((previous) => Math.max(previous, Math.min(puzzleIndex + 1, mysteryPuzzles.length - 1)))
+    }
+  }
+
+  function changePicture(index: number) {
+    setPuzzleIndex(index)
+    setSelectedColor(null)
+    setFeedback('')
+  }
+
+  const finished = progress.colored.length === puzzle.regions.length
   const availableColors = new Set(puzzle.regions.map((region) => region.addends[0] + region.addends[1]))
   return (
     <main className="activity-game mystery-game" ref={gameRef}>
       <div className="activity-game-header">
         <Link className="activity-back" to={back} aria-label={backLabel}><ArrowLeft size={22} /><span>Back</span></Link>
-        <span className="activity-game-title">Math Mystery Picture</span>
+        <span className="activity-game-title">Math Mystery Picture: Addition</span>
         <button className="activity-fullscreen" onClick={() => void toggleFullscreen()} aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}</button>
       </div>
       {fullscreenError && <p className="activity-fullscreen-error" role="status">Fullscreen is unavailable in this browser.</p>}
       <section className="mystery-content">
-        <h1>Math Mystery Picture <Palette size={26} aria-hidden="true" /></h1>
-        <p>Picture {puzzleIndex + 1} of {mysteryPuzzles.length} · {puzzle.difficulty} — Tap a problem to reveal a color!</p>
-        <div className="activity-progress" aria-label={`${solved.length} of ${puzzle.regions.length} parts colored`}>
-          <span>{solved.length} / {puzzle.regions.length}</span>
-          <div className="activity-progress-track"><div style={{ width: `${solved.length / puzzle.regions.length * 100}%` }} /></div>
+        <h1>Math Mystery Picture: Addition <Palette size={26} aria-hidden="true" /></h1>
+        <p>Picture {puzzleIndex + 1} of {mysteryPuzzles.length} · {puzzle.difficulty} — Solve a problem, then choose its color and tap the number!</p>
+        <div className="activity-progress" aria-label={`${progress.colored.length} of ${puzzle.regions.length} parts colored`}>
+          <span>{progress.colored.length} / {puzzle.regions.length}</span>
+          <div className="activity-progress-track"><div style={{ width: `${progress.colored.length / puzzle.regions.length * 100}%` }} /></div>
         </div>
         <div className="mystery-board">
-          <svg viewBox="0 0 800 520" role="group" aria-label="Mystery picture. Choose an unsolved addition problem." className="mystery-picture">
+          <svg viewBox="0 0 800 520" role="group" aria-label="Mystery picture. Solve problems and color the matching numbers." className="mystery-picture">
             {puzzle.regions.map((region) => {
-              const isSolved = solved.includes(region.id)
+              const isSolved = progress.solved.includes(region.id)
+              const isColored = progress.colored.includes(region.id)
               const sum = region.addends[0] + region.addends[1]
               return (
                 <g
                   key={region.id}
                   ref={(element) => { regionRefs.current[region.id] = element }}
-                  className={`mystery-region${isSolved ? ' is-solved' : ''}`}
+                  className={`mystery-region${isColored ? ' is-colored' : ''}`}
                   role="button"
                   tabIndex={0}
-                  aria-disabled={isSolved}
-                  aria-label={isSolved ? `${region.name}, colored ${answerColors[sum].name}` : `${region.name}: ${region.addends[0]} plus ${region.addends[1]}, not yet colored`}
-                  onClick={() => { if (!isSolved) setSelected(region) }}
+                  aria-disabled={isColored}
+                  aria-label={isColored ? `${region.name}, colored ${answerColors[sum].name}` : isSolved ? `${region.name}, answer ${sum}, ready to color` : `${region.name}: ${region.addends[0]} plus ${region.addends[1]}, not yet solved`}
+                  onClick={() => selectRegion(region)}
                   onKeyDown={(event) => {
-                    if (!isSolved && (event.key === 'Enter' || event.key === ' ')) {
+                    if (!isColored && (event.key === 'Enter' || event.key === ' ')) {
                       event.preventDefault()
-                      setSelected(region)
+                      selectRegion(region)
                     }
                   }}
                 >
-                  <path d={region.path} fill={isSolved ? answerColors[sum].fill : '#fffefa'} fillRule="evenodd" />
-                  {!isSolved && <text x={region.labelX} y={region.labelY} textAnchor="middle" dominantBaseline="central">{region.addends[0]}+{region.addends[1]}</text>}
+                  <path d={region.path} fill={isColored ? answerColors[sum].fill : '#fffefa'} fillRule="evenodd" />
+                  {!isColored && <text x={region.labelX} y={region.labelY} textAnchor="middle" dominantBaseline="central">{isSolved ? sum : `${region.addends[0]}+${region.addends[1]}`}</text>}
                 </g>
               )
             })}
           </svg>
         </div>
-        <div className="mystery-legend" aria-label="Answer color key">
-          {Object.entries(answerColors).filter(([answer]) => availableColors.has(Number(answer))).map(([answer, color]) => <span key={answer}><i style={{ backgroundColor: color.fill }} aria-hidden="true" />{answer} = {color.name}</span>)}
+        <div className="mystery-legend" role="group" aria-label="Choose a color">
+          {Object.entries(answerColors).filter(([answer]) => availableColors.has(Number(answer))).map(([answer, color]) => <button key={answer} aria-pressed={selectedColor === Number(answer)} onClick={() => { setSelectedColor(Number(answer)); setFeedback(`${color.name} selected. Tap a ${answer} to color it.`) }}><i style={{ backgroundColor: color.fill }} aria-hidden="true" />{answer} = {color.name}</button>)}
         </div>
+        <div className="mystery-color-feedback" role="status">{feedback}</div>
         <div className="mystery-finish" aria-live="polite">
           {finished && <strong><Sparkles size={22} aria-hidden="true" /> {puzzleIndex === mysteryPuzzles.length - 1 ? 'You finished all the pictures!' : 'You revealed the picture!'}</strong>}
         </div>
         <nav className="mystery-navigation" aria-label="Picture navigation">
-          <button disabled={puzzleIndex === 0} onClick={() => setPuzzleIndex((index) => index - 1)}>Previous picture</button>
-          {finished && <button onClick={() => setSolvedByPuzzle((previous) => ({ ...previous, [puzzle.id]: [] }))}>Play this picture again</button>}
-          {puzzleIndex < mysteryPuzzles.length - 1 && <button disabled={puzzleIndex + 1 > unlockedIndex} onClick={() => setPuzzleIndex((index) => index + 1)}>{puzzleIndex + 1 > unlockedIndex ? 'Finish to unlock next' : 'Next picture'}</button>}
+          <button disabled={puzzleIndex === 0} onClick={() => changePicture(puzzleIndex - 1)}>Previous picture</button>
+          {finished && <button onClick={() => { setProgressByPuzzle((previous) => ({ ...previous, [puzzle.id]: { solved: [], colored: [] } })); setSelectedColor(null); setFeedback('') }}>Play this picture again</button>}
+          {puzzleIndex < mysteryPuzzles.length - 1 && <button disabled={puzzleIndex + 1 > unlockedIndex} onClick={() => changePicture(puzzleIndex + 1)}>{puzzleIndex + 1 > unlockedIndex ? 'Finish to unlock next' : 'Next picture'}</button>}
         </nav>
       </section>
-      {selected && <QuestionDialog key={selected.id} region={selected} onClose={closeQuestion} onCorrect={solve} />}
+      {selected && <QuestionDialog key={selected.id} region={selected} onClose={closeQuestion} onAnswer={answer} waiting={retryAt !== 0} />}
     </main>
   )
 }
