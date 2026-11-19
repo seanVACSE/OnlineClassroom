@@ -5,6 +5,7 @@ import { TracingWorkspace } from './tools/tracing/TracingWorkspace'
 import { ShapePlayground } from './tools/shape-playground/ShapePlayground'
 import { ShapeActivitySelect, ShapeGradeSelect, ShapeGame } from './tools/shape-playground/ShapeActivities'
 import { ThanksgivingPage, TurkeyWorkspace } from './tools/thanksgiving/Thanksgiving'
+import { Crossword } from './tools/thanksgiving/Crossword'
 import turkeyLogo from './assets/thanksgiving/turkeys/turkeyLogo.webp'
 import './App.css'
 
@@ -73,6 +74,7 @@ function App() {
       <Route path="/tools/thanksgiving" element={<ThanksgivingPage />} />
       <Route path="/tools/thanksgiving/turkey" element={<TurkeyWorkspace />} />
       <Route path="/tools/thanksgiving/turkey/:imageId" element={<Navigate to="/tools/thanksgiving/turkey" replace />} />
+      <Route path="/tools/thanksgiving/crossword" element={<Crossword />} />
       <Route path="/tools/shape-playground" element={<ShapeActivitySelect />} />
       <Route path="/tools/shape-playground/free" element={<ShapePlayground />} />
       <Route path="/tools/shape-playground/grades/:grade" element={<ShapeGradeSelect />} />

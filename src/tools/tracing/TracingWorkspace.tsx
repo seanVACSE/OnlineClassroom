@@ -279,7 +279,7 @@ export function TracingWorkspace({ turkeyAssignment }: { turkeyAssignment?: Trac
     <main ref={containerRef} className={`tracing-workspace${isFullscreen ? ' is-fullscreen' : ''}`}>
       <Link className="back-link" to={back}><ArrowLeft size={17} /> {turkeyAssignment ? 'Back to Thanksgiving' : 'Back to assignments'}</Link>
       <h1>{assignment.name}</h1>
-      {turkeyAssignment && <p>Draw a disguise for your turkey so it will not be eaten!</p>}
+      {turkeyAssignment && <p className="turkey-instructions">Draw a disguise for your turkey so it will not be eaten!</p>}
 
       <div className="tracing-toolbar">
         <button type="button" className={tool === 'pen' && !isHandTool ? 'active' : ''} onClick={() => { setTool('pen'); setIsHandTool(false) }}>

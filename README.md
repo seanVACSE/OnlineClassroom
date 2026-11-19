@@ -4,7 +4,9 @@ THis is our read me!
 
 The Thanksgiving section contains Disguise a Turkey. Selecting it opens the tracing workspace directly with `src/assets/thanksgiving/turkeys/Turkey.png` as the background. `turkeyLogo.webp` is used for the Thanksgiving buttons. Rebuild and deploy after changing either image. Keep the drawing filename unchanged while students are working, since saved work is tied to the filename.
 
-Students draw over the turkey using the tracing tools and complete the three writing prompts. Submit sends a PDF containing the drawing and writing using the existing tracing submission system; the student's name is entered in the submission dialog. Drawing and writing are saved locally on the device, not separately per student. Use Start over to clear both between students on shared devices.
+Students draw over the turkey using the tracing tools and complete the three writing prompts. Fullscreen focuses on drawing; exit fullscreen to see the writing prompts again. Submit sends a PDF containing the drawing and writing using the existing tracing submission system; the student's name is entered in the submission dialog. Drawing and writing are saved locally on the device, not separately per student. Use Start over to clear both between students on shared devices.
+
+Crossword 2–3 has 12 Thanksgiving and fall-themed words. Choose an Across or Down clue (or tap a square), type the whole word, and check it. Correct words appear in the grid, including shared letters; incorrect answers can be retried. Select a shared square again to switch clues. Progress lasts until the activity is left; Start over clears the puzzle.
 
 ## Shape Playground
 
