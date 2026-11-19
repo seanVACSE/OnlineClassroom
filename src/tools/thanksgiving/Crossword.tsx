@@ -47,6 +47,8 @@ export function Crossword() {
     <p className="crossword-intro">Choose a clue, type your answer, and check it. Correct words appear in the puzzle!</p>
     <div className="crossword-layout">
       <section className="crossword-board-section" aria-label="Crossword puzzle">
+        <p className="crossword-scroll-hint">Swipe the puzzle left or right to see the whole grid.</p>
+        <div className="crossword-grid-scroll">
         <div className="crossword-grid" role="group" aria-label="Crossword grid">
           {cells.map((cell) => {
             const solvedWord = cell.words.find((word) => solved.includes(word.id))
@@ -54,7 +56,7 @@ export function Crossword() {
             const active = cell.words.some((word) => word.id === selected.id)
             return cell.words.length === 0
               ? <span className="crossword-block" key={`${cell.row}-${cell.col}`} aria-hidden="true" />
-              : <button type="button" className={`crossword-cell${active ? ' is-active' : ''}`} key={`${cell.row}-${cell.col}`}
+              : <button type="button" className={`crossword-cell${active ? ' is-active' : ''}${cell.number ? ' is-numbered' : ''}`} key={`${cell.row}-${cell.col}`}
                 aria-label={`Row ${cell.row + 1}, column ${cell.col + 1}${cell.number ? `, clue ${cell.number}` : ''}${letter ? `, ${letter}` : ', empty'}`}
                 onClick={() => {
                   const currentIndex = cell.words.findIndex((word) => word.id === selected.id)
@@ -64,6 +66,7 @@ export function Crossword() {
                 {letter && <span className="crossword-letter">{letter}</span>}
               </button>
           })}
+        </div>
         </div>
         <p className="crossword-progress">{solved.length} of {crosswordWords.length} words solved</p>
       </section>
