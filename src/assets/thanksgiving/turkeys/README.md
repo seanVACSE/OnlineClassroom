@@ -1,0 +1,1 @@
+Turkey.png is the drawing background for Disguise a Turkey. turkeyLogo.webp is used for the Thanksgiving buttons. Other images in this folder are not used automatically. Rebuild and deploy after changing either image. Do not rename Turkey.png while students are working; saved work is tied to its filename.

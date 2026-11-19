@@ -15,18 +15,22 @@ export function loadStrokes(assignmentId: string, fileName: string): Stroke[] {
   }
 }
 
-export function saveStrokes(assignmentId: string, fileName: string, strokes: Stroke[]): void {
+export function saveStrokes(assignmentId: string, fileName: string, strokes: Stroke[]): boolean {
   try {
     localStorage.setItem(storageKey(assignmentId, fileName), JSON.stringify(strokes))
-  } catch {
-    // Ignore quota/availability errors (e.g. private browsing) — drawing still works in-memory.
+    return true
+  } catch (error) {
+    console.error('[tracing] could not save drawing', error)
+    return false
   }
 }
 
-export function clearStrokes(assignmentId: string, fileName: string): void {
+export function clearStrokes(assignmentId: string, fileName: string): boolean {
   try {
     localStorage.removeItem(storageKey(assignmentId, fileName))
-  } catch {
-    // Ignore storage errors.
+    return true
+  } catch (error) {
+    console.error('[tracing] could not clear saved drawing', error)
+    return false
   }
 }

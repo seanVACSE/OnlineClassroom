@@ -1,14 +1,17 @@
-import { ArrowLeft, PenLine, Shapes } from 'lucide-react'
+import { ArrowLeft, Leaf, PenLine, Shapes } from 'lucide-react'
 import { Link, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { TracingAssignmentList } from './tools/tracing/TracingAssignmentList'
 import { TracingWorkspace } from './tools/tracing/TracingWorkspace'
 import { ShapePlayground } from './tools/shape-playground/ShapePlayground'
 import { ShapeActivitySelect, ShapeGradeSelect, ShapeGame } from './tools/shape-playground/ShapeActivities'
+import { ThanksgivingPage, TurkeyWorkspace } from './tools/thanksgiving/Thanksgiving'
+import turkeyLogo from './assets/thanksgiving/turkeys/turkeyLogo.webp'
 import './App.css'
 
 const tools = [
-  { id: 'tracing', name: 'Tracing', icon: PenLine, image: 'tracing.png' },
-  { id: 'shape-playground', name: 'Shape Playground', icon: Shapes, image: 'shape-playground.png' },
+  { id: 'tracing', name: 'Tracing', icon: PenLine, image: `${import.meta.env.BASE_URL}images/home/tracing.png` },
+  { id: 'shape-playground', name: 'Shape Playground', icon: Shapes, image: `${import.meta.env.BASE_URL}images/home/shape-playground.png` },
+  { id: 'thanksgiving', name: 'Thanksgiving', icon: Leaf, image: turkeyLogo },
 ]
 
 const HOME_IMAGES = {
@@ -35,7 +38,7 @@ function HomePage() {
             <Link className="home-tool-link" to={`/tools/${id}`} key={id} aria-label={name}>
               <span className="home-tool-image">
                 <Icon className="home-tool-fallback" size={76} strokeWidth={1.5} aria-hidden="true" />
-                <img src={`${import.meta.env.BASE_URL}images/home/${image}`} alt="" onError={(event) => { event.currentTarget.hidden = true }} />
+                <img src={image} alt="" onError={(event) => { event.currentTarget.hidden = true }} />
               </span>
               <span className="home-tool-title">{name}</span>
             </Link>
@@ -67,6 +70,9 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/tools/tracing" element={<TracingAssignmentList />} />
       <Route path="/tools/tracing/:assignmentId" element={<TracingWorkspace />} />
+      <Route path="/tools/thanksgiving" element={<ThanksgivingPage />} />
+      <Route path="/tools/thanksgiving/turkey" element={<TurkeyWorkspace />} />
+      <Route path="/tools/thanksgiving/turkey/:imageId" element={<Navigate to="/tools/thanksgiving/turkey" replace />} />
       <Route path="/tools/shape-playground" element={<ShapeActivitySelect />} />
       <Route path="/tools/shape-playground/free" element={<ShapePlayground />} />
       <Route path="/tools/shape-playground/grades/:grade" element={<ShapeGradeSelect />} />

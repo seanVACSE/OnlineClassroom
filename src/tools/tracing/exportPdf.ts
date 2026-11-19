@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf'
 import type { TracingAssignment } from '../../data/tracingAssets'
 import { drawStroke, type Stroke } from './tracingStrokes'
+import type { TurkeyWriting } from '../thanksgiving/turkeyWriting'
 
 const MAX_EXPORT_DIMENSION = 1400
 const JPEG_QUALITY = 0.82
@@ -26,10 +27,48 @@ export async function exportAssignmentAsPdf(
 export async function exportAssignmentAsPdfBase64(
   assignment: TracingAssignment,
   strokesByFile: Record<string, Stroke[]>,
+  writing?: TurkeyWriting,
 ): Promise<string> {
   const doc = await buildAssignmentPdf(assignment, strokesByFile)
   if (!doc) return ''
+  if (writing) appendTurkeyWriting(doc, writing)
   return doc.output('datauristring').split(',')[1] ?? ''
+}
+
+export function appendTurkeyWriting(doc: jsPDF, writing: TurkeyWriting): void {
+  const pageWidth = 612
+  const pageHeight = 792
+  const margin = 48
+  let y = margin
+  doc.addPage([pageWidth, pageHeight], 'portrait')
+  doc.setFontSize(22)
+  doc.text('Disguise a Turkey', margin, y)
+  y += 40
+  doc.setFontSize(14)
+  for (const [prompt, answer] of [
+    ["My turkey's name is:", writing.turkeyName],
+    ['My turkey is dressed as:', writing.disguise],
+    ['You should not eat me because:', writing.reason],
+  ]) {
+    const lines: string[] = doc.splitTextToSize(answer.trim() || '(not answered)', pageWidth - margin * 2)
+    if (y + 50 > pageHeight - margin) {
+      doc.addPage([pageWidth, pageHeight], 'portrait')
+      y = margin
+    }
+    doc.setFont('helvetica', 'bold')
+    doc.text(prompt, margin, y)
+    y += 24
+    doc.setFont('helvetica', 'normal')
+    for (const line of lines) {
+      if (y > pageHeight - margin) {
+        doc.addPage([pageWidth, pageHeight], 'portrait')
+        y = margin
+      }
+      doc.text(line, margin, y)
+      y += 20
+    }
+    y += 20
+  }
 }
 
 async function buildAssignmentPdf(

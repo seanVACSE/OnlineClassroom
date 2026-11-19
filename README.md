@@ -1,5 +1,11 @@
 THis is our read me!
 
+## Thanksgiving
+
+The Thanksgiving section contains Disguise a Turkey. Selecting it opens the tracing workspace directly with `src/assets/thanksgiving/turkeys/Turkey.png` as the background. `turkeyLogo.webp` is used for the Thanksgiving buttons. Rebuild and deploy after changing either image. Keep the drawing filename unchanged while students are working, since saved work is tied to the filename.
+
+Students draw over the turkey using the tracing tools and complete the three writing prompts. Submit sends a PDF containing the drawing and writing using the existing tracing submission system; the student's name is entered in the submission dialog. Drawing and writing are saved locally on the device, not separately per student. Use Start over to clear both between students on shared devices.
+
 ## Shape Playground
 
 Select a shape or text and drag its round handles to resize it, or drag the handle above it to rotate it. The handles have larger touch targets to make them easier to use on a touchscreen. Choose Text to add words, then edit them in the text field; use the color palette to change the selected text's color.

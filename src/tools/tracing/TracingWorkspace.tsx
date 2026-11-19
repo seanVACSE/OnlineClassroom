@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { ArrowLeft, CheckCircle2, Eraser, Hand, Maximize, Minimize, PenLine, Send, Trash2, ZoomIn, ZoomOut } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { getTracingAssignment } from '../../data/tracingAssets'
+import { getTracingAssignment, type TracingAssignment } from '../../data/tracingAssets'
 import { getTracingColor } from '../../data/tracingColors'
 import { TRACE_COLORS } from './palette'
 import { clearStrokes, loadStrokes, saveStrokes } from './tracingStorage'
 import { drawStroke, replayStrokes, widthForTool, type Stroke, type TraceTool, type TracePoint } from './tracingStrokes'
 import { exportAssignmentAsPdfBase64 } from './exportPdf'
 import { submitTracingPdf } from './tracingSubmit'
+import { emptyTurkeyWriting, loadTurkeyWriting, saveTurkeyWriting, type TurkeyWriting } from '../thanksgiving/turkeyWriting'
 import './Tracing.css'
 
 const MAX_CANVAS_DIMENSION = 1400
@@ -18,9 +19,9 @@ const ZOOM_STEP = 0.25
 
 type SubmitState = 'idle' | 'confirming' | 'submitting' | 'success' | 'error'
 
-export function TracingWorkspace() {
+export function TracingWorkspace({ turkeyAssignment }: { turkeyAssignment?: TracingAssignment } = {}) {
   const { assignmentId } = useParams()
-  const assignment = assignmentId ? getTracingAssignment(assignmentId) : undefined
+  const assignment = turkeyAssignment ?? (assignmentId ? getTracingAssignment(assignmentId) : undefined)
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [tool, setTool] = useState<TraceTool>('pen')
@@ -32,10 +33,31 @@ export function TracingWorkspace() {
   const [brushScale, setBrushScale] = useState(1)
   const [strokesByFile, setStrokesByFile] = useState<Record<string, Stroke[]>>({})
   const [imageAspect, setImageAspect] = useState<number | null>(null)
+  const [imageError, setImageError] = useState(false)
+  const [imageReady, setImageReady] = useState(false)
+  const [drawingError, setDrawingError] = useState('')
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [studentName, setStudentName] = useState('')
+  const [writing, setWriting] = useState<TurkeyWriting>(() => {
+    if (!turkeyAssignment) return { ...emptyTurkeyWriting }
+    try {
+      return loadTurkeyWriting(turkeyAssignment.images[0].fileName)
+    } catch (error) {
+      console.error('[turkey writing] could not load saved writing', error)
+      return { ...emptyTurkeyWriting }
+    }
+  })
+  const [writingError, setWritingError] = useState(() => {
+    if (!turkeyAssignment) return ''
+    try {
+      loadTurkeyWriting(turkeyAssignment.images[0].fileName)
+      return ''
+    } catch {
+      return 'Could not load saved writing on this device. Your earlier writing may not be available.'
+    }
+  })
 
   const containerRef = useRef<HTMLDivElement>(null)
   const baseCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -62,6 +84,8 @@ export function TracingWorkspace() {
     if (!assignment || !currentImage) return
     setZoom(MIN_ZOOM)
     setPan({ x: 0, y: 0 })
+    setImageError(false)
+    setImageReady(false)
     const baseCanvas = baseCanvasRef.current
     const drawCanvas = drawCanvasRef.current
     if (!baseCanvas || !drawCanvas) return
@@ -88,8 +112,14 @@ export function TracingWorkspace() {
       }
 
       setImageAspect(width / height)
+      setImageReady(true)
+    }
+    img.onerror = () => {
+      console.error('[tracing] could not load image', currentImage.url)
+      setImageError(true)
     }
     img.src = currentImage.url
+    return () => { img.onload = null; img.onerror = null }
   }, [assignment, currentImage])
 
   // Keep isFullscreen in sync when the browser exits fullscreen (e.g. via Esc).
@@ -116,7 +146,7 @@ export function TracingWorkspace() {
   }, [])
 
   const handlePointerDown = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!currentImage) return
+    if (!currentImage || !imageReady) return
     event.currentTarget.setPointerCapture(event.pointerId)
     if (isHandTool) {
       panStartRef.current = { pointerX: event.clientX, pointerY: event.clientY, panX: pan.x, panY: pan.y }
@@ -133,7 +163,7 @@ export function TracingWorkspace() {
 
     const ctx = canvas.getContext('2d')
     if (ctx) drawStroke(ctx, stroke, canvas.width, canvas.height)
-  }, [brushScale, color, currentImage, getNormalizedPoint, isHandTool, pan, tool])
+  }, [brushScale, color, currentImage, getNormalizedPoint, imageReady, isHandTool, pan, tool])
 
   const handlePointerMove = useCallback((event: React.PointerEvent<HTMLCanvasElement>) => {
     const panStart = panStartRef.current
@@ -168,17 +198,23 @@ export function TracingWorkspace() {
     currentStrokeRef.current = null
     if (!stroke || !assignment || !currentImage) return
 
-    setStrokesByFile((prev) => {
-      const updated = [...(prev[currentImage.fileName] ?? []), stroke]
-      saveStrokes(assignment.id, currentImage.fileName, updated)
-      return { ...prev, [currentImage.fileName]: updated }
-    })
-  }, [assignment, currentImage])
+    const updated = [...(strokesByFile[currentImage.fileName] ?? []), stroke]
+    if (!saveStrokes(assignment.id, currentImage.fileName, updated)) {
+      setDrawingError('Your drawing could not be saved on this device. Submit it before leaving this page.')
+    } else {
+      setDrawingError('')
+    }
+    setStrokesByFile((prev) => ({ ...prev, [currentImage.fileName]: updated }))
+  }, [assignment, currentImage, strokesByFile])
 
   const handleClear = useCallback(() => {
     if (!assignment || !currentImage) return
 
-    clearStrokes(assignment.id, currentImage.fileName)
+    if (!clearStrokes(assignment.id, currentImage.fileName)) {
+      setDrawingError('The saved drawing could not be cleared from this device. Please ask your teacher for help.')
+    } else {
+      setDrawingError('')
+    }
     setStrokesByFile((prev) => ({ ...prev, [currentImage.fileName]: [] }))
 
     const canvas = drawCanvasRef.current
@@ -195,7 +231,7 @@ export function TracingWorkspace() {
     setSubmitState('submitting')
     setSubmitError(null)
     try {
-      const pdfData = await exportAssignmentAsPdfBase64(assignment, strokesByFile)
+      const pdfData = await exportAssignmentAsPdfBase64(assignment, strokesByFile, turkeyAssignment ? writing : undefined)
       const success = await submitTracingPdf(studentName.trim() || 'Unknown', assignment.name, pdfData)
       if (success) {
         setSubmitState('success')
@@ -209,7 +245,7 @@ export function TracingWorkspace() {
       setSubmitError(error instanceof Error ? error.message : 'Unknown error')
       setSubmitState('error')
     }
-  }, [assignment, studentName, strokesByFile])
+  }, [assignment, studentName, strokesByFile, turkeyAssignment, writing])
 
   const handleColorSelect = useCallback((value: string) => {
     setColor(value)
@@ -222,12 +258,28 @@ export function TracingWorkspace() {
     setPan({ x: 0, y: 0 })
   }, [])
 
-  if (!assignmentId || !assignment) return <Navigate to="/tools/tracing" replace />
+  if (!assignment) return <Navigate to="/tools/tracing" replace />
+
+  function updateWriting(field: keyof TurkeyWriting, value: string) {
+    const next = { ...writing, [field]: value }
+    setWriting(next)
+    if (!turkeyAssignment) return
+    try {
+      saveTurkeyWriting(turkeyAssignment.images[0].fileName, next)
+      setWritingError('')
+    } catch (error) {
+      console.error('[turkey writing] could not save writing', error)
+      setWritingError('Your writing could not be saved on this device. Submit it before leaving this page.')
+    }
+  }
+
+  const back = turkeyAssignment ? '/tools/thanksgiving' : '/tools/tracing'
 
   return (
     <main ref={containerRef} className={`tracing-workspace${isFullscreen ? ' is-fullscreen' : ''}`}>
-      <Link className="back-link" to="/tools/tracing"><ArrowLeft size={17} /> Back to assignments</Link>
+      <Link className="back-link" to={back}><ArrowLeft size={17} /> {turkeyAssignment ? 'Back to Thanksgiving' : 'Back to assignments'}</Link>
       <h1>{assignment.name}</h1>
+      {turkeyAssignment && <p>Draw a disguise for your turkey so it will not be eaten!</p>}
 
       <div className="tracing-toolbar">
         <button type="button" className={tool === 'pen' && !isHandTool ? 'active' : ''} onClick={() => { setTool('pen'); setIsHandTool(false) }}>
@@ -258,12 +310,14 @@ export function TracingWorkspace() {
           type="button"
           className="tracing-export"
           onClick={handleSubmitClick}
-          disabled={submitState === 'submitting'}
+          disabled={submitState === 'submitting' || !imageReady}
         >
           <Send size={16} /> Submit
         </button>
       </div>
 
+      {imageError && <p role="alert">This picture could not be loaded. Please go back and choose another picture.</p>}
+      {drawingError && <p role="alert">{drawingError}</p>}
       <div className="tracing-main">
         <div className="tracing-colors" role="group" aria-label="Pen color">
           {TRACE_COLORS.map((swatch) => (
@@ -311,7 +365,7 @@ export function TracingWorkspace() {
         </div>
       </div>
 
-      <div className="tracing-nav">
+      {!turkeyAssignment && <div className="tracing-nav">
         <button type="button" disabled={currentIndex === 0} onClick={() => setCurrentIndex((i) => i - 1)}>
           Previous
         </button>
@@ -323,12 +377,39 @@ export function TracingWorkspace() {
         >
           Next
         </button>
-      </div>
+      </div>}
+
+      {turkeyAssignment && <section className="turkey-writing" aria-labelledby="turkey-writing-title">
+        <h2 id="turkey-writing-title">Tell us about your turkey</h2>
+        <label>My turkey's name is
+          <input value={writing.turkeyName} maxLength={200} onChange={(event) => updateWriting('turkeyName', event.target.value)} />
+        </label>
+        <label>My turkey is dressed as
+          <input value={writing.disguise} maxLength={200} onChange={(event) => updateWriting('disguise', event.target.value)} />
+        </label>
+        <label>You should not eat me because
+          <textarea value={writing.reason} maxLength={1000} onChange={(event) => updateWriting('reason', event.target.value)} />
+        </label>
+        {writingError && <p className="turkey-save-error" role="alert">{writingError}</p>}
+        <button type="button" className="turkey-reset" onClick={() => {
+          if (!window.confirm('Start over? This clears your drawing and writing on this device.')) return
+          handleClear()
+          const blank = { ...emptyTurkeyWriting }
+          setWriting(blank)
+          try {
+            saveTurkeyWriting(turkeyAssignment.images[0].fileName, blank)
+            setWritingError('')
+          } catch (error) {
+            console.error('[turkey writing] could not clear saved writing', error)
+            setWritingError('Your writing could not be cleared from this device. Please ask your teacher for help.')
+          }
+        }}>Start over</button>
+      </section>}
 
       {submitState === 'confirming' && (
         <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
           <div className="tracing-modal">
-            <p>Submit this tracing?</p>
+            <p>{turkeyAssignment ? 'Submit your turkey drawing and writing?' : 'Submit this tracing?'}</p>
             <label className="tracing-name-field">
               <span>Your name (optional)</span>
               <input
@@ -372,9 +453,9 @@ export function TracingWorkspace() {
         <div className="tracing-modal-overlay" role="dialog" aria-modal="true">
           <div className="tracing-modal tracing-modal-success">
             <CheckCircle2 size={56} className="tracing-success-icon" />
-            <p>Great job! Your tracing was submitted.</p>
+            <p>{turkeyAssignment ? 'Great job! Your turkey was submitted.' : 'Great job! Your tracing was submitted.'}</p>
             <div className="tracing-modal-actions">
-              <Link className="tracing-export" to="/tools/tracing">Back to assignments</Link>
+              <Link className="tracing-export" to={back}>{turkeyAssignment ? 'Back to Thanksgiving' : 'Back to assignments'}</Link>
             </div>
           </div>
         </div>
