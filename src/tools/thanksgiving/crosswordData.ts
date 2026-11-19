@@ -10,6 +10,27 @@ export interface CrosswordWord {
   clue: string
 }
 
+export interface CrosswordCell {
+  row: number
+  col: number
+  words: CrosswordWord[]
+  number?: number
+}
+
+export function buildCrosswordCells(size: number, words: CrosswordWord[]): CrosswordCell[] {
+  return Array.from({ length: size * size }, (_, index) => {
+    const row = Math.floor(index / size)
+    const col = index % size
+    const matching = words.filter((word) => wordCells(word).some((cell) => cell.row === row && cell.col === col))
+    return { row, col, words: matching, number: matching.find((word) => word.row === row && word.col === col)?.number }
+  })
+}
+
+export function revealedLetter(cell: CrosswordCell, solved: string[]): string | undefined {
+  const word = cell.words.find((item) => solved.includes(item.id))
+  return word && wordCells(word).find((part) => part.row === cell.row && part.col === cell.col)?.letter
+}
+
 export const crosswordSize = 11
 
 export const crosswordWords: CrosswordWord[] = [

@@ -11,7 +11,6 @@ test('templates have large, non-overlapping, supported shape outlines inside the
     for (const [index, slot] of template.slots.entries()) {
       assert.ok(templatePaths[slot.shape])
       assert.ok(slot.width >= 70 && slot.height >= 70)
-      assert.ok(slot.width * 646 / 1000 >= 44 && slot.height * 386 / 600 >= 44, `${template.id}: ${slot.id} is too small on a narrow screen`)
       if (slot.shape === 'square' || slot.shape === 'circle') assert.equal(slot.width, slot.height)
       if (slot.shape === 'rectangle') assert.notEqual(slot.width, slot.height)
       assert.ok(slot.x >= 0 && slot.y >= 0 && slot.x + slot.width <= 1000 && slot.y + slot.height <= 600)

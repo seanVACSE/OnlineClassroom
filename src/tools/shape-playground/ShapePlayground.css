@@ -41,6 +41,9 @@
 .playground-shapes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .playground-shape-button { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 7px; min-width: 0; height: 75px; padding: 6px 2px; border: 1px solid #e3ebe1; border-radius: 7px; background: #f8faf6; color: #477a69; }
 .playground-shape-button:hover { border-color: #8db4a0; background: #edf6ee; }
+.playground--templates .playground-shape-button { touch-action: none; user-select: none; }
+.playground--templates .playground-shape-button svg, .playground--templates .playground-shape-button span { pointer-events: none; }
+.playground-drag-preview { position: fixed; z-index: 20; pointer-events: none; transform: translate(-50%, -50%); opacity: .8; }
 .playground-shape-button span { max-width: 100%; color: #526a5e; font-size: 11px; text-transform: capitalize; }
 .playground-oval-icon { transform: scaleX(1.25) scaleY(.8); }
 .playground-text-field { display: grid; gap: 5px; margin-top: 12px; color: #687e74; font-size: 11px; font-weight: 800; }
@@ -58,12 +61,19 @@
 .playground-board-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
 .playground-background-label { display: flex; align-items: center; gap: 10px; color: #71867b; font-size: 10px; font-weight: 800; }
 .playground-background-label select { width: min(220px, 42vw); padding: 9px 28px 9px 10px; border: 1px solid #d8e3d9; border-radius: 6px; background: #fffefa; color: #334d40; font-size: 13px; font-weight: 600; text-transform: capitalize; }
+.playground-template-help { margin: 0 0 18px; color: #49675b; font-size: 14px; line-height: 1.4; }
+.playground-template-scroll-hint { display: none; margin: 0 0 8px; color: #49675b; font-size: 13px; }
+.playground-template-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #334d40; font-size: 13px; }
+.playground-template-nav button { min-height: 38px; padding: 6px 10px; border: 1px solid #d8e3d9; border-radius: 6px; background: #fffefa; color: #334d40; }
 .playground-actions { display: flex; align-items: center; gap: 6px; }
 .playground-actions button { width: 38px; height: 38px; border: 1px solid #d8e3d9; border-radius: 6px; background: #fffefa; color: #557267; }
 .playground-actions button:hover:not(:disabled) { background: #f0f7ef; }
 .playground-action-divider { width: 1px; height: 25px; margin: 0 4px; background: #d3ded4; }
 .playground-actions .playground-clear { display: block; width: auto; padding: 0 12px; color: #a45b50; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .playground-board-area { display: flex; align-items: center; justify-content: center; flex: 1 1 auto; min-height: 0; }
+.playground-board-scroll { display: contents; }
+.playground--templates .playground-board-scroll { display: flex; flex: 1 1 auto; min-height: 0; }
+.playground--templates .playground-board-area { width: 100%; }
 .playground-board-wrap { flex: 0 0 auto; overflow: hidden; border: 1px solid #d7e2d7; border-radius: 4px; background: white; box-shadow: 0 6px 20px #344c3610; touch-action: none; }
 .playground-board-wrap canvas { display: block; }
 .playground-status { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; color: #82948a; font-size: 12px; text-transform: capitalize; }
@@ -77,12 +87,16 @@
   .playground-fullscreen span, .playground-download span { display: none; }
   .playground-layout { display: flex; flex-direction: column; height: auto; min-height: 0; }
   .playground-sidebar { order: 2; padding: 18px 16px 24px; border-top: 1px solid #d8e2d9; border-right: 0; }
+  .playground--templates .playground-sidebar { order: 0; }
+  .playground--templates .playground-template-scroll-hint { display: block; }
   .playground-shapes { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .playground-shape-button { height: 65px; }
   .playground-color-heading { margin-top: 20px; }
   .playground-colors { grid-template-columns: repeat(12, 27px); gap: 8px; }
   .playground-main { padding: 18px 16px 20px; }
   .playground-board-area { flex: none; width: 100%; aspect-ratio: 1000 / 700; }
+  .playground--templates .playground-board-scroll { display: block; flex: none; overflow-x: auto; }
+  .playground--templates .playground-board-area { min-width: 650px; }
   .playground-board-toolbar { flex-wrap: wrap; }
 }
 

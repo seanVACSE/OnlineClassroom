@@ -8,6 +8,8 @@ Students draw over the turkey using the tracing tools and complete the three wri
 
 Crossword 2–3 has 12 Thanksgiving and fall-themed words. Choose an Across or Down clue (or tap a square), type the whole word, and check it. Correct words appear in the grid, including shared letters; incorrect answers can be retried. Select a shared square again to switch clues. On narrow screens, swipe the grid sideways to see it all. Progress lasts until the activity is left; Start over clears the puzzle.
 
+Crossword 4–6 has 20 more challenging Thanksgiving and fall-themed words and uses the same controls. Students can submit their current progress using their name; the existing tracing submission system receives a PDF with the grid, solved letters, clues, and progress count. Unsolved answers are not included. Crossword progress lasts until the activity is left.
+
 ## Shape Playground
 
 Select a shape or text and drag its round handles to resize it, or drag the handle above it to rotate it. The handles have larger touch targets to make them easier to use on a touchscreen. Choose Text to add words, then edit them in the text field; use the color palette to change the selected text's color.
@@ -16,6 +18,6 @@ Choose Free Design for the open canvas, or choose Kindergarten, Grade 1, Grade 2
 
 Kindergarten includes Color by Number: choose a color from the number key, then tap matching numbered sections to fill them. Complete each picture to unlock the next; progress lasts until the activity is left.
 
-Kindergarten also includes Shape Templates, with three pictures to build. Choose any color and drag a shape onto its matching dotted outline, or select a shape and then tap an outline. Shapes automatically fit the template; no resizing is needed. Use the template controls to switch pictures or start one over. Progress lasts until the activity is left.
+Kindergarten also includes Shape Templates, with three pictures to build. Add shapes from the palette, drag them over the dotted outlines, and use their handles to resize or rotate them yourself. Choose any colors, and use the template controls to switch pictures or clear a canvas. Swipe the picture sideways on narrow screens. Each picture keeps its shapes until the activity is left.
 
 Math Mystery Picture: Addition is a Grade 1 addition game, with one easy picture followed by four medium pictures, including penguins on ice and a sea turtle reef. Select a picture or background section and choose an answer from the number pad (or use the number keys). After an incorrect answer, wait five seconds before trying another problem or answer. A correct answer displays its number on the uncolored section; choose the matching color from the key and tap the section to color it. Incorrect colors do not fill the section. All addends and sums are from 0 to 9. Color every section to unlock the next picture; use Previous picture to revisit earlier work or Play this picture again to restart it. Progress lasts until the activity is left.

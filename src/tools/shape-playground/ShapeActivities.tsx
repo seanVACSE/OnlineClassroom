@@ -4,7 +4,6 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { countingQuestions, patternQuestions, sortingQuestions, type ActivityColor, type ActivityShape, type SortingQuestion } from './activityQuestions'
 import { MysteryPicture } from './MysteryPicture'
 import { ShapePlayground } from './ShapePlayground'
-import { ShapeTemplates } from './ShapeTemplates'
 import { gradeActivities, gradeIds, gradeLabels, isGrade, isGradeActivity, type Grade } from './grades'
 import './ShapeActivities.css'
 
@@ -195,7 +194,7 @@ export function ShapeGame() {
   if (!isGradeActivity(grade, activity)) return <Navigate to={`${root}/grades/${grade}`} replace />
   if (activity === 'mystery-picture') return <MysteryPicture key={grade} back={`${root}/grades/${grade}`} backLabel={`Back to ${gradeLabels[grade]} activities`} />
   if (activity === 'number-picture') return <MysteryPicture key={grade} mode="numbers" back={`${root}/grades/${grade}`} backLabel={`Back to ${gradeLabels[grade]} activities`} />
-  if (activity === 'shape-templates') return <ShapeTemplates />
+  if (activity === 'shape-templates') return <ShapePlayground mode="templates" back={`${root}/grades/k`} />
   if (activity === 'nametag') return <ShapePlayground mode="nametag" back={`${root}/grades/${grade}`} />
   return <Game key={`${grade}-${activity}`} activity={activity} grade={grade} />
 }

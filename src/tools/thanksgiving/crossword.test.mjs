@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { crosswordSize, crosswordWords, matchesAnswer, wordCells } from './crosswordData.ts'
+import { buildCrosswordCells, crosswordSize, crosswordWords, matchesAnswer, revealedLetter, wordCells } from './crosswordData.ts'
+import { upperCrosswordSize, upperCrosswordWords } from './crosswordUpperData.ts'
 
-test('crossword has at least ten unique, connected, correctly numbered words', () => {
-  assert.ok(crosswordWords.length >= 10)
-  assert.equal(new Set(crosswordWords.map((word) => word.id)).size, crosswordWords.length)
-  assert.equal(new Set(crosswordWords.map((word) => word.answer)).size, crosswordWords.length)
+for (const [label, size, words, expected] of [['2-3', crosswordSize, crosswordWords, 12], ['4-6', upperCrosswordSize, upperCrosswordWords, 20]]) {
+test(`${label} crossword has unique, connected, correctly numbered words`, () => {
+  assert.equal(words.length, expected)
+  assert.equal(new Set(words.map((word) => word.id)).size, words.length)
+  assert.equal(new Set(words.map((word) => word.answer)).size, words.length)
   const cells = new Map()
   const starts = new Map()
-  for (const word of crosswordWords) {
+  for (const word of words) {
     assert.match(word.answer, /^[A-Z]+$/)
     assert.ok(word.clue)
     const start = `${word.row},${word.col}`
@@ -17,7 +19,7 @@ test('crossword has at least ten unique, connected, correctly numbered words', (
     const parts = wordCells(word)
     assert.equal(parts.length, word.answer.length)
     for (const cell of parts) {
-      assert.ok(cell.row >= 0 && cell.row < crosswordSize && cell.col >= 0 && cell.col < crosswordSize)
+      assert.ok(cell.row >= 0 && cell.row < size && cell.col >= 0 && cell.col < size)
       const key = `${cell.row},${cell.col}`
       const previous = cells.get(key)
       if (previous) {
@@ -33,7 +35,7 @@ test('crossword has at least ten unique, connected, correctly numbered words', (
     return ar - br || ac - bc
   })
   sortedStarts.forEach(([, number], index) => assert.equal(number, index + 1))
-  const reached = new Set([crosswordWords[0].id])
+  const reached = new Set([words[0].id])
   let count
   do {
     count = reached.size
@@ -41,8 +43,8 @@ test('crossword has at least ten unique, connected, correctly numbered words', (
       if (words.some((word) => reached.has(word.id))) words.forEach((word) => reached.add(word.id))
     }
   } while (reached.size > count)
-  assert.equal(reached.size, crosswordWords.length)
-  for (const word of crosswordWords) {
+  assert.equal(reached.size, words.length)
+  for (const word of words) {
     const dr = word.direction === 'down' ? 1 : 0
     const dc = word.direction === 'across' ? 1 : 0
     assert.equal(cells.has(`${word.row - dr},${word.col - dc}`), false)
@@ -54,6 +56,16 @@ test('crossword has at least ten unique, connected, correctly numbered words', (
       }
     }
   }
+})
+}
+
+test('only solved letters and shared crossings are revealed', () => {
+  const cells = buildCrosswordCells(upperCrosswordSize, upperCrosswordWords)
+  const shared = cells.find((cell) => cell.words.length === 2)
+  const hidden = cells.find((cell) => cell.words.length === 1 && cell.words[0].id !== shared.words[0].id)
+  assert.equal(revealedLetter(shared, []), undefined)
+  assert.equal(revealedLetter(shared, [shared.words[0].id]), wordCells(shared.words[0]).find((cell) => cell.row === shared.row && cell.col === shared.col).letter)
+  assert.equal(revealedLetter(hidden, [shared.words[0].id]), undefined)
 })
 
 test('answers are case-insensitive, trim surrounding spaces, and reject mistakes', () => {
