@@ -17,7 +17,10 @@
 }
 
 .thanksgiving-content h2 { margin: 0 0 16px; color: white; font-family: var(--display); }
-.thanksgiving-activity-grid { grid-template-columns: repeat(3, minmax(0, min(210px, 30dvh))); gap: 24px; }
+.thanksgiving-activity-grid { grid-template-columns: repeat(4, minmax(0, min(210px, 30dvh))); gap: 24px; }
+@media (max-width: 600px) {
+  .thanksgiving-activity-grid { grid-template-columns: repeat(2, minmax(0, min(190px, 30dvh))); }
+}
 @media (max-width: 400px) {
   .thanksgiving-activity-grid { gap: 14px; }
 }

@@ -10,6 +10,8 @@ Crossword 2–3 has 12 Thanksgiving and fall-themed words. Choose an Across or D
 
 Crossword 4–6 has 20 more challenging Thanksgiving and fall-themed words and uses the same controls. Students can submit their current progress using their name; the existing tracing submission system receives a PDF with the grid, solved letters, clues, and progress count. Unsolved answers are not included. Crossword progress lasts until the activity is left.
 
+Word Trails has Thanksgiving Foods and Fall Things puzzles. Drag through adjacent letters (including diagonally), or tap letters in order and choose Check word. Tap the previous letter to undo a step; tap the last letter again to check. Find every theme word and the special edge-to-edge word. Each letter belongs to one word. A starting-letter hint is available, and each puzzle's progress lasts until the activity is left.
+
 ## Shape Playground
 
 Select a shape or text and drag its round handles to resize it, or drag the handle above it to rotate it. The handles have larger touch targets to make them easier to use on a touchscreen. Choose Text to add words, then edit them in the text field; use the color palette to change the selected text's color.

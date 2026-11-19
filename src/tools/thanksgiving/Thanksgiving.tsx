@@ -1,4 +1,4 @@
-import { ArrowLeft, Grid2X2, Paintbrush } from 'lucide-react'
+import { ArrowLeft, Grid2X2, Paintbrush, Waypoints } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import turkeyLogo from '../../assets/thanksgiving/turkeys/turkeyLogo.webp'
 import turkeyImage from '../../assets/thanksgiving/turkeys/Turkey.png'
@@ -41,6 +41,10 @@ export function ThanksgivingPage() {
       <Link className="tracing-assignment-link" to="/tools/thanksgiving/crossword-4-6">
         <span className="tracing-assignment-image"><Grid2X2 size={76} strokeWidth={1.5} aria-hidden="true" /></span>
         <span className="tracing-assignment-title">Crossword 4–6</span>
+      </Link>
+      <Link className="tracing-assignment-link" to="/tools/thanksgiving/word-trails">
+        <span className="tracing-assignment-image"><Waypoints size={76} strokeWidth={1.5} aria-hidden="true" /></span>
+        <span className="tracing-assignment-title">Word Trails</span>
       </Link>
     </div>
   </Page>
